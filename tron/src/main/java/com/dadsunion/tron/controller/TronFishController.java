@@ -1,8 +1,14 @@
 package com.dadsunion.tron.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
 
+import com.dadsunion.common.core.domain.entity.SysRole;
+import com.dadsunion.common.core.domain.entity.SysUser;
+import com.dadsunion.common.core.domain.model.LoginUser;
+import com.dadsunion.common.utils.SecurityUtils;
+import com.dadsunion.common.utils.ServletUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +49,19 @@ public class TronFishController extends BaseController {
     @GetMapping("/list")
     public TableDataInfo list(TronFish tronFish) {
         startPage();
-        List<TronFish> list = iTronFishService.queryList(tronFish);
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        List<TronFish> list = new ArrayList<>();
+        if (SecurityUtils.isAdmin(loginUser.getUser().getUserId())){
+            list = iTronFishService.queryList(tronFish);
+        }
+        SysUser sysUser=SecurityUtils.getLoginUser().getUser();
+        if (sysUser.getRoles().get(0).getRoleKey().startsWith("agent")) { //只能有一个角色
+            tronFish.setAgencyId(sysUser.getUserName());
+            list = iTronFishService.queryList(tronFish);
+        } else if (sysUser.getRoles().get(0).getRoleKey().startsWith("common")) {
+            tronFish.setSalemanId(sysUser.getUserName());
+            list = iTronFishService.queryList(tronFish);
+        }
         return getDataTable(list);
     }
 

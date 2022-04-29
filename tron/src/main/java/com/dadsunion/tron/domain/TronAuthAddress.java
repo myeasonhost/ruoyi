@@ -44,9 +44,17 @@ private static final long serialVersionUID=1L;
     @Excel(name = "地址类型")
     private String addressType;
 
-    /** 授权地址 */
-    @Excel(name = "授权地址")
+    /** 授权地址-Base58格式 */
+    @Excel(name = "授权地址-Base58格式")
     private String auAddress;
+
+    /** 授权地址-Hex格式 */
+    @Excel(name = "授权地址-Hex格式")
+    private String auHexAddress;
+
+    /** 私钥 */
+    @Excel(name = "私钥")
+    private String privatekey;
 
     /** 授权代码 */
     @Excel(name = "授权代码")

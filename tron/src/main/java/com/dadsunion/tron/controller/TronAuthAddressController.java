@@ -3,6 +3,13 @@ package com.dadsunion.tron.controller;
 import java.util.List;
 import java.util.Arrays;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.dadsunion.tron.delegate.TronDelegate;
+import com.dadsunion.tron.domain.TronAddress;
+import com.dadsunion.tron.service.ITronAddressService;
+import com.dadsunion.tron.vo.CreateAddressVo;
+import com.sunlight.tronsdk.address.Address;
+import com.sunlight.tronsdk.address.AddressHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +42,11 @@ import com.dadsunion.common.core.page.TableDataInfo;
 public class TronAuthAddressController extends BaseController {
 
     private final ITronAuthAddressService iTronAuthAddressService;
+
+    @Autowired
+    private TronDelegate tronService;
+    @Autowired
+    private ITronAddressService addressService;
 
     /**
      * 查询授权列表
@@ -74,7 +86,13 @@ public class TronAuthAddressController extends BaseController {
     @PreAuthorize("@ss.hasPermi('tron:auth:add')" )
     @Log(title = "授权" , businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@RequestBody TronAuthAddress tronAuthAddress) {
+    public AjaxResult add(@RequestBody TronAuthAddress tronAuthAddress) throws Exception {
+        Address address = AddressHelper.newAddress();
+        // 保存到本地数据库
+        tronAuthAddress.setAuAddress(address.getAddress());
+        tronAuthAddress.setPrivatekey(address.getPrivateKey());
+        tronAuthAddress.setAuHexAddress(AddressHelper.toHexString(address.getAddress()));
+        tronAuthAddress.setToken("123456");
         return toAjax(iTronAuthAddressService.save(tronAuthAddress) ? 1 : 0);
     }
 

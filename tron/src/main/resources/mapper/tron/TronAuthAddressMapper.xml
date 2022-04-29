@@ -10,6 +10,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="salemanId"    column="saleman_id"    />
         <result property="addressType"    column="address_type"    />
         <result property="auAddress"    column="au_address"    />
+        <result property="auHexAddress"    column="au_hex_address"    />
+        <result property="privatekey"    column="privateKey"    />
         <result property="token"    column="token"    />
         <result property="remark"    column="remark"    />
         <result property="createTime"    column="create_time"    />
