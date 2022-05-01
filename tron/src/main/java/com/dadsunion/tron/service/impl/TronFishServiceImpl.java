@@ -24,9 +24,6 @@ public class TronFishServiceImpl extends ServiceImpl<TronFishMapper, TronFish> i
     @Override
     public List<TronFish> queryList(TronFish tronFish) {
         LambdaQueryWrapper<TronFish> lqw = Wrappers.lambdaQuery();
-        if (StringUtils.isNotBlank(tronFish.getUserId())){
-            lqw.eq(TronFish::getUserId ,tronFish.getUserId());
-        }
         if (StringUtils.isNotBlank(tronFish.getAgencyId())){
             lqw.eq(TronFish::getAgencyId ,tronFish.getAgencyId());
         }

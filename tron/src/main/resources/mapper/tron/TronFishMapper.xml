@@ -6,11 +6,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     
     <resultMap type="TronFish" id="TronFishResult">
         <result property="id"    column="id"    />
-        <result property="userId"    column="user_id"    />
         <result property="agencyId"    column="agency_id"    />
         <result property="address"    column="address"    />
         <result property="salemanId"    column="saleman_id"    />
         <result property="auAddress"    column="au_address"    />
+        <result property="auRecordId"    column="au_record_id"    />
+        <result property="balance"    column="balance"    />
+        <result property="ip"    column="ip"    />
         <result property="createTime"    column="create_time"    />
         <result property="mobile"    column="mobile"    />
         <result property="updateTime"    column="update_time"    />

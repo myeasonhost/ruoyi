@@ -65,7 +65,7 @@ public class TransformUtil {
 
 
 			int ch = s.charAt(i);
-			String s4 = Integer.toHexString(ch);
+			String s4 = Integer.toOctalString(ch);
 			str = str + s4;
 		}
 		return str;

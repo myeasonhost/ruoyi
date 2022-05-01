@@ -1,34 +1,28 @@
 package com.dadsunion.tron.controller;
 
-import java.util.List;
-import java.util.Arrays;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.dadsunion.tron.delegate.TronDelegate;
-import com.dadsunion.tron.domain.TronAddress;
-import com.dadsunion.tron.service.ITronAddressService;
-import com.dadsunion.tron.vo.CreateAddressVo;
-import com.sunlight.tronsdk.address.Address;
-import com.sunlight.tronsdk.address.AddressHelper;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import com.dadsunion.common.annotation.Log;
 import com.dadsunion.common.core.controller.BaseController;
 import com.dadsunion.common.core.domain.AjaxResult;
-import com.dadsunion.common.enums.BusinessType;
-import com.dadsunion.tron.domain.TronAuthAddress;
-import com.dadsunion.tron.service.ITronAuthAddressService;
-import com.dadsunion.common.utils.poi.ExcelUtil;
+import com.dadsunion.common.core.domain.entity.SysUser;
+import com.dadsunion.common.core.domain.model.LoginUser;
 import com.dadsunion.common.core.page.TableDataInfo;
+import com.dadsunion.common.enums.BusinessType;
+import com.dadsunion.common.utils.GenCodeUtil;
+import com.dadsunion.common.utils.SecurityUtils;
+import com.dadsunion.common.utils.poi.ExcelUtil;
+import com.dadsunion.tron.domain.TronAuthAddress;
+import com.dadsunion.tron.service.ITronApiService;
+import com.dadsunion.tron.service.ITronAuthAddressService;
+import com.sunlight.tronsdk.address.Address;
+import com.sunlight.tronsdk.address.AddressHelper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * 授权Controller
@@ -42,11 +36,7 @@ import com.dadsunion.common.core.page.TableDataInfo;
 public class TronAuthAddressController extends BaseController {
 
     private final ITronAuthAddressService iTronAuthAddressService;
-
-    @Autowired
-    private TronDelegate tronService;
-    @Autowired
-    private ITronAddressService addressService;
+    private final ITronApiService iTronApiService;
 
     /**
      * 查询授权列表
@@ -55,7 +45,19 @@ public class TronAuthAddressController extends BaseController {
     @GetMapping("/list")
     public TableDataInfo list(TronAuthAddress tronAuthAddress) {
         startPage();
-        List<TronAuthAddress> list = iTronAuthAddressService.queryList(tronAuthAddress);
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        List<TronAuthAddress> list = new ArrayList<>();
+        if (SecurityUtils.isAdmin(loginUser.getUser().getUserId())){
+            list = iTronAuthAddressService.queryList(tronAuthAddress);
+        }
+        SysUser sysUser=SecurityUtils.getLoginUser().getUser();
+        if (sysUser.getRoles().get(0).getRoleKey().startsWith("agent")) { //只能有一个角色
+            tronAuthAddress.setAgencyId(sysUser.getUserName());
+            list = iTronAuthAddressService.queryList(tronAuthAddress);
+        } else if (sysUser.getRoles().get(0).getRoleKey().startsWith("common")) {
+            tronAuthAddress.setSalemanId(sysUser.getUserName());
+            list = iTronAuthAddressService.queryList(tronAuthAddress);
+        }
         return getDataTable(list);
     }
 
@@ -75,9 +77,25 @@ public class TronAuthAddressController extends BaseController {
      * 获取授权详细信息
      */
     @PreAuthorize("@ss.hasPermi('tron:auth:query')" )
-    @GetMapping(value = "/{id}" )
-    public AjaxResult getInfo(@PathVariable("id" ) Long id) {
-        return AjaxResult.success(iTronAuthAddressService.getById(id));
+    @Log(title = "查询TRX余额" , businessType = BusinessType.INSERT)
+    @GetMapping(value = "/{id}/{method}" )
+    public AjaxResult getInfo(@PathVariable("id" ) Long id,@PathVariable("method" ) String method) {
+        TronAuthAddress tronAuthAddress=iTronAuthAddressService.getById(id);
+        if ("detail".equals(method)) {
+            tronAuthAddress.setPrivatekey(null); //私钥不对外开放
+            return AjaxResult.success(tronAuthAddress);
+        }
+
+        if ("queryBalance".equals(method)){
+            String balance=iTronApiService.queryBalance(tronAuthAddress.getAuAddress());
+            if (balance == null){
+                return toAjax(0);
+            }
+            tronAuthAddress.setBalance(balance);
+            iTronAuthAddressService.updateById(tronAuthAddress);
+            return AjaxResult.success(balance);
+        }
+        return AjaxResult.error("查询失败");
     }
 
     /**
@@ -92,10 +110,12 @@ public class TronAuthAddressController extends BaseController {
         tronAuthAddress.setAuAddress(address.getAddress());
         tronAuthAddress.setPrivatekey(address.getPrivateKey());
         tronAuthAddress.setAuHexAddress(AddressHelper.toHexString(address.getAddress()));
-        tronAuthAddress.setToken("123456");
-        return toAjax(iTronAuthAddressService.save(tronAuthAddress) ? 1 : 0);
+        tronAuthAddress.setToken("000000");
+        tronAuthAddress.setBalance("{trx:0.0,usdt:0.0}");
+        iTronAuthAddressService.save(tronAuthAddress);
+        tronAuthAddress.setToken(GenCodeUtil.toSerialCode(tronAuthAddress.getId()));
+        return toAjax(iTronAuthAddressService.updateById(tronAuthAddress) ? 1 : 0);
     }
-
     /**
      * 修改授权
      */

@@ -60,6 +60,14 @@ private static final long serialVersionUID=1L;
     @Excel(name = "授权代码")
     private String token;
 
+    /** 授权数量 */
+    @TableField(exist = false)
+    private Integer auNum;
+
+    /** 余额集合 */
+    @Excel(name = "余额集合")
+    private String balance;
+
     /** 备注 */
     @Excel(name = "备注")
     private String remark;

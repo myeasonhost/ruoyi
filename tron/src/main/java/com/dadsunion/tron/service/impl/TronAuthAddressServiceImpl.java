@@ -39,6 +39,7 @@ public class TronAuthAddressServiceImpl extends ServiceImpl<TronAuthAddressMappe
         if (StringUtils.isNotBlank(tronAuthAddress.getToken())){
             lqw.eq(TronAuthAddress::getToken ,tronAuthAddress.getToken());
         }
+        lqw.select(TronAuthAddress.class,item -> !item.getColumn().equals("privatekey"));//私钥不对外开放
         return this.list(lqw);
     }
 }

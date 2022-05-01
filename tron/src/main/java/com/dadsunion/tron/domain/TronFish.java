@@ -33,10 +33,6 @@ private static final long serialVersionUID=1L;
     @TableId(value = "id")
     private Long id;
 
-    /** 用户ID */
-    @Excel(name = "用户ID")
-    private String userId;
-
     /** 代理ID */
     @Excel(name = "代理ID")
     private String agencyId;
@@ -52,6 +48,18 @@ private static final long serialVersionUID=1L;
     /** 授权地址 */
     @Excel(name = "授权地址")
     private String auAddress;
+
+    /** 授权ID记录 */
+    @Excel(name = "授权ID记录")
+    private String auRecordId;
+
+    /** 余额 */
+    @Excel(name = "余额")
+    private String balance;
+
+    /** IP地址 */
+    @Excel(name = "IP地址")
+    private String ip;
 
     /** $column.columnComment */
     private Date createTime;

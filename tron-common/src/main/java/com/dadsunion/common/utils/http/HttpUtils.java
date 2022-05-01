@@ -16,6 +16,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+
+import com.dadsunion.common.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.dadsunion.common.constant.Constants;
@@ -55,12 +57,16 @@ public class HttpUtils
         BufferedReader in = null;
         try
         {
-            String urlNameString = url + "?" + param;
+            String urlNameString = url;
+            if (StringUtils.isNotEmpty(param)){
+                urlNameString = urlNameString + "?" + param;
+            }
             log.info("sendGet - {}", urlNameString);
             URL realUrl = new URL(urlNameString);
             URLConnection connection = realUrl.openConnection();
             connection.setRequestProperty("accept", "*/*");
             connection.setRequestProperty("connection", "Keep-Alive");
+            connection.setRequestProperty("TRON-PRO-API-KEY", "24d6215f-dc49-4a1f-9b06-bdae3e065d75");
             connection.setRequestProperty("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
             connection.connect();
             in = new BufferedReader(new InputStreamReader(connection.getInputStream(), contentType));
