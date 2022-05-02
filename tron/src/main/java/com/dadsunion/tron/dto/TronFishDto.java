@@ -8,11 +8,9 @@ import javax.validation.constraints.NotNull;
 @Data
 public class TronFishDto {
 
-    @NotNull
     @ApiModelProperty("用户Token")
     private String token;
 
-    @NotNull
     @ApiModelProperty("用户地址")
     private String address;
 

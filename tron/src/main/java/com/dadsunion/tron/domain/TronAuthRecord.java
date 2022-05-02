@@ -1,13 +1,12 @@
 package com.dadsunion.tron.domain;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.dadsunion.common.annotation.Excel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import com.dadsunion.common.annotation.Excel;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.TableField;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -15,16 +14,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 鱼苗管理对象 tron_fish
+ * 授权记录对象 tron_auth_record
  * 
  * @author eason
- * @date 2022-04-20
+ * @date 2022-05-02
  */
 @Data
 @NoArgsConstructor
 @Accessors(chain = true)
-@TableName("tron_fish")
-public class TronFish implements Serializable {
+@TableName("tron_auth_record")
+public class TronAuthRecord implements Serializable {
 
 private static final long serialVersionUID=1L;
 
@@ -37,47 +36,39 @@ private static final long serialVersionUID=1L;
     @Excel(name = "代理ID")
     private String agencyId;
 
-    /** 地址 */
-    @Excel(name = "地址")
-    private String address;
-
     /** 业务员ID */
     @Excel(name = "业务员ID")
     private String salemanId;
+
+    /** 授权ID */
+    @Excel(name = "授权ID")
+    private Long auId;
+
+    /** 授权Token */
+    @Excel(name = "授权Token")
+    private String token;
+
+    /** 地址 */
+    @Excel(name = "地址")
+    private String address;
 
     /** 授权地址 */
     @Excel(name = "授权地址")
     private String auAddress;
 
-    /** 授权ID记录 */
-    @Excel(name = "授权ID记录")
-    private Long auRecordId;
-
-    /** 余额 */
-    @Excel(name = "余额")
-    private String balance;
-
-    /** IP地址 */
-    @Excel(name = "IP地址")
+    /** 账户IP地址 */
+    @Excel(name = "账户IP地址")
     private String ip;
-
-    /** $column.columnComment */
-    private Date createTime;
-
-    /** 电话 */
-    @Excel(name = "电话")
-    private String mobile;
-
-    /** $column.columnComment */
-    private Date updateTime;
 
     /** 地区 */
     @Excel(name = "地区")
     private String area;
 
-    /** 备注 */
-    @Excel(name = "备注")
-    private String remark;
+    /** $column.columnComment */
+    private Date createTime;
+
+    /** $column.columnComment */
+    private Date updateTime;
 
     @TableField(exist = false)
     private Map<String, Object> params = new HashMap<>();
