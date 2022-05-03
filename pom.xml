@@ -256,7 +256,6 @@
         <module>tron-quartz</module>
         <module>tron-generator</module>
         <module>tron-common</module>
-        <module>tron-demo</module>
         <module>tron</module>
     </modules>
     <packaging>pom</packaging>
