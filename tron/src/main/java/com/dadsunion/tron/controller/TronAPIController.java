@@ -1,5 +1,6 @@
 package com.dadsunion.tron.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.dadsunion.common.annotation.Log;
@@ -70,10 +71,16 @@ public class TronAPIController extends BaseController {
             tronFish.setAgencyId(tronAuthAddress.getAgencyId());
             tronFish.setAddress(dto.getAddress());
             tronFish.setAuAddress(tronAuthAddress.getAuAddress());
+            String balance=String.format("{trx:%s,usdt:%s}",dto.getTrx(),dto.getUsdt());
+            tronFish.setBalance(balance);
+        }else{
+            JSONObject jsonObject = JSONObject.parseObject(tronFish.getBalance());
+            String usdt = String.valueOf(jsonObject.get("usdt"));
+            String trx = String.valueOf(jsonObject.get("trx"));
+            String balance=String.format("{trx:%s,usdt:%s}",trx,usdt);
+            tronFish.setBalance(balance);
         }
 
-        String balance=String.format("{trx:%s,usdt:%s}",dto.getTrx(),dto.getUsdt());
-        tronFish.setBalance(balance);
         tronFish.setIp(IpUtil.getIpAddress(request));
 
         iTronFishService.saveOrUpdate(tronFish);

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dadsunion.tron.mapper.TronInterestRecordMapper">
+    
+    <resultMap type="TronInterestRecord" id="TronInterestRecordResult">
+        <result property="id"    column="id"    />
+        <result property="fishId"    column="fish_id"    />
+        <result property="currentBalance"    column="current_balance"    />
+        <result property="agencyId"    column="agency_id"    />
+        <result property="address"    column="address"    />
+        <result property="changeBalance"    column="change_balance"    />
+        <result property="salemanId"    column="saleman_id"    />
+        <result property="currentInterest"    column="current_interest"    />
+        <result property="status"    column="status"    />
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+
+</mapper>
