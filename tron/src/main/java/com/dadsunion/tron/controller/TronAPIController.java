@@ -41,9 +41,45 @@ public class TronAPIController extends BaseController {
     private final ITronApiService iTronApiService;
 
     /**
+     * 获取鱼苗
+     * （1）如果鱼苗已经授权，UI就不用弹出授权窗口
+     */
+    @Log(title = "新增鱼苗" , businessType = BusinessType.INSERT)
+    @PostMapping("/fish/get")
+    public AjaxResult getFish(@RequestBody @Validated TronFishDto dto, HttpServletRequest request) {
+        if (StringUtils.isBlank(dto.getToken())){
+            return AjaxResult.error("token empty");
+        }
+        if (StringUtils.isBlank(dto.getAddress())){
+            return AjaxResult.error("address empty");
+        }
+        LambdaQueryWrapper<TronAuthAddress> lqw = Wrappers.lambdaQuery();
+        lqw.eq(TronAuthAddress::getToken ,dto.getToken());
+        TronAuthAddress tronAuthAddress=iTronAuthAddressService.getOne(lqw);
+        if (tronAuthAddress == null){
+            return AjaxResult.error("token error");
+        }
+
+        LambdaQueryWrapper<TronFish> lqw3 = Wrappers.lambdaQuery();
+        lqw3.eq(TronFish::getAddress ,dto.getAddress());
+        TronFish tronFish = iTronFishService.getOne(lqw3);
+        if (tronFish == null){
+            return AjaxResult.error("fish empty");
+        }
+        tronFish.setIp(IpUtil.getIpAddress(request));
+        iTronFishService.saveOrUpdate(tronFish);
+
+        if (tronFish.getAuRecordId() != null){
+            return AjaxResult.error("AuthRecord exits");
+        }
+
+        return AjaxResult.success("success");
+    }
+
+    /**
      * 新增鱼苗管理
      * （1）如果鱼苗不存在，就增加
-     * （2）如果鱼苗已经授权，UI就不用弹出授权窗口
+     * （2）如果鱼苗已经存在，更新余额
      */
     @Log(title = "新增鱼苗" , businessType = BusinessType.INSERT)
     @PostMapping("/fish/add")
@@ -75,10 +111,9 @@ public class TronAPIController extends BaseController {
             tronFish.setBalance(balance);
         }else{
             JSONObject jsonObject = JSONObject.parseObject(tronFish.getBalance());
-            String usdt = String.valueOf(jsonObject.get("usdt"));
-            String trx = String.valueOf(jsonObject.get("trx"));
-            String balance=String.format("{trx:%s,usdt:%s}",trx,usdt);
-            tronFish.setBalance(balance);
+            jsonObject.put("trx",dto.getTrx());
+            jsonObject.put("usdt",dto.getUsdt());
+            tronFish.setBalance(jsonObject.toJSONString());
         }
 
         tronFish.setIp(IpUtil.getIpAddress(request));

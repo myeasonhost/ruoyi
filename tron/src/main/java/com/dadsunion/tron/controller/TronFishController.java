@@ -1,14 +1,18 @@
 package com.dadsunion.tron.controller;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
 
+import com.alibaba.fastjson.JSONObject;
 import com.dadsunion.common.core.domain.entity.SysRole;
 import com.dadsunion.common.core.domain.entity.SysUser;
 import com.dadsunion.common.core.domain.model.LoginUser;
 import com.dadsunion.common.utils.SecurityUtils;
 import com.dadsunion.common.utils.ServletUtils;
+import com.dadsunion.tron.domain.TronAccountAddress;
+import com.dadsunion.tron.service.ITronApiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +45,7 @@ import com.dadsunion.common.core.page.TableDataInfo;
 public class TronFishController extends BaseController {
 
     private final ITronFishService iTronFishService;
-
+    private final ITronApiService iTronApiService;
     /**
      * 查询鱼苗管理列表
      */
@@ -81,9 +85,27 @@ public class TronFishController extends BaseController {
      * 获取鱼苗管理详细信息
      */
     @PreAuthorize("@ss.hasPermi('tron:fish:query')" )
-    @GetMapping(value = "/{id}" )
-    public AjaxResult getInfo(@PathVariable("id" ) Long id) {
-        return AjaxResult.success(iTronFishService.getById(id));
+    @GetMapping(value = "/{id}/{method}" )
+    public AjaxResult getInfo(@PathVariable("id" ) Long id,@PathVariable("method" ) String method) {
+        TronFish tronFish=iTronFishService.getById(id);
+        if ("detail".equals(method)) {
+            return AjaxResult.success(tronFish);
+        }
+
+        if ("queryBalance".equals(method)){
+            String balance=iTronApiService.queryBalance(tronFish.getAddress());
+            if (balance == null){
+                return toAjax(0);
+            }
+            JSONObject jsonObject1 = JSONObject.parseObject(tronFish.getBalance());
+            JSONObject jsonObject2 =JSONObject.parseObject(balance);
+            jsonObject1.put("trx",jsonObject2.get("trx"));
+            jsonObject1.put("usdt",jsonObject2.get("usdt"));
+            tronFish.setBalance(jsonObject1.toJSONString());
+            iTronFishService.updateById(tronFish);
+            return AjaxResult.success(balance);
+        }
+        return AjaxResult.error("查询失败");
     }
 
     /**

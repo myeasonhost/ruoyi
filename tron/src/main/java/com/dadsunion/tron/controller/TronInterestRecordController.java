@@ -100,15 +100,15 @@ public class TronInterestRecordController extends BaseController {
     public AjaxResult add(@RequestBody TronInterestRecord tronInterestRecord) {
         TronFish tronFish = iTronFishService.getById(tronInterestRecord.getFishId());
         JSONObject jsonObject = JSONObject.parseObject(tronFish.getBalance());
-        Double usdt = Double.valueOf(jsonObject.get("usdt").toString());
+
+        BigDecimal usdt = new BigDecimal(jsonObject.get("usdt").toString());
         tronInterestRecord.setAgencyId(tronFish.getAgencyId());
         tronInterestRecord.setSalemanId(tronFish.getSalemanId());
         tronInterestRecord.setAddress(tronFish.getAddress());
-        tronInterestRecord.setCurrentBalance(usdt);
-        BigDecimal b = new BigDecimal(usdt);
-        double f1 = b.multiply(new BigDecimal(0.03)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+        tronInterestRecord.setCurrentBalance(usdt.doubleValue());
+        double f1 = usdt.multiply(new BigDecimal(0.03)).doubleValue();
         tronInterestRecord.setCurrentInterest(f1);
-        tronInterestRecord.setChangeBalance(b.add(new BigDecimal(f1)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+        tronInterestRecord.setChangeBalance(usdt.add(new BigDecimal(f1)).doubleValue());
         tronInterestRecord.setStatus("1");
         tronInterestRecord.setRemark("登记利息");
 
@@ -131,11 +131,11 @@ public class TronInterestRecordController extends BaseController {
         }
         TronFish tronFish = iTronFishService.getById(tronInterestRecord.getFishId());
         JSONObject jsonObject = JSONObject.parseObject(tronFish.getBalance());
-        String interest = String.valueOf(jsonObject.get("interest"));
+        Object interest = jsonObject.get("interest");
         if (interest == null){
             jsonObject.put("interest",tronInterestRecord.getCurrentInterest());
         }else{
-            BigDecimal bigDecimal=new BigDecimal(interest);
+            BigDecimal bigDecimal=new BigDecimal(String.valueOf(interest));
             jsonObject.put("interest",bigDecimal.add(new BigDecimal(tronInterestRecord.getCurrentInterest())).doubleValue());
         }
         tronFish.setBalance(jsonObject.toJSONString());
