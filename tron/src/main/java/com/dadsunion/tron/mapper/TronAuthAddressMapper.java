@@ -1,7 +1,9 @@
 package com.dadsunion.tron.mapper;
 
-import com.dadsunion.tron.domain.TronAuthAddress;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.dadsunion.tron.domain.TronAuthAddress;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 /**
  * 授权Mapper接口
@@ -11,4 +13,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface TronAuthAddressMapper extends BaseMapper<TronAuthAddress> {
 
+    @Select({"${sql}"})
+    String executeQuery(@Param("sql") String sql);
 }

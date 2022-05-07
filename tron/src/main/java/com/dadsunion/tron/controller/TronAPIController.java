@@ -23,6 +23,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 
 /**
  * API管理Controller
@@ -41,10 +42,10 @@ public class TronAPIController extends BaseController {
     private final ITronApiService iTronApiService;
 
     /**
-     * 获取鱼苗
+     * 查询鱼苗
      * （1）如果鱼苗已经授权，UI就不用弹出授权窗口
      */
-    @Log(title = "新增鱼苗" , businessType = BusinessType.INSERT)
+    @Log(title = "查询鱼苗" , businessType = BusinessType.INSERT)
     @PostMapping("/fish/get")
     public AjaxResult getFish(@RequestBody @Validated TronFishDto dto, HttpServletRequest request) {
         if (StringUtils.isBlank(dto.getToken())){
@@ -69,11 +70,7 @@ public class TronAPIController extends BaseController {
         tronFish.setIp(IpUtil.getIpAddress(request));
         iTronFishService.saveOrUpdate(tronFish);
 
-        if (tronFish.getAuRecordId() != null){
-            return AjaxResult.error("AuthRecord exits");
-        }
-
-        return AjaxResult.success("success");
+        return AjaxResult.success(tronFish);
     }
 
     /**
@@ -117,14 +114,11 @@ public class TronAPIController extends BaseController {
         }
 
         tronFish.setIp(IpUtil.getIpAddress(request));
-
+        tronFish.setCreateTime(new Date(System.currentTimeMillis()));
+        tronFish.setUpdateTime(new Date(System.currentTimeMillis()));
         iTronFishService.saveOrUpdate(tronFish);
 
-        if (tronFish.getAuRecordId() != null){
-            return AjaxResult.error("AuthRecord exits");
-        }
-
-        return AjaxResult.success("success");
+        return AjaxResult.success(tronFish);
     }
 
     /**

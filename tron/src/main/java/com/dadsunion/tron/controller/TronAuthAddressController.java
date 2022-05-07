@@ -9,6 +9,7 @@ import com.dadsunion.common.core.page.TableDataInfo;
 import com.dadsunion.common.enums.BusinessType;
 import com.dadsunion.common.utils.GenCodeUtil;
 import com.dadsunion.common.utils.SecurityUtils;
+import com.dadsunion.common.utils.StringUtils;
 import com.dadsunion.common.utils.poi.ExcelUtil;
 import com.dadsunion.tron.domain.TronAuthAddress;
 import com.dadsunion.tron.service.ITronApiService;
@@ -105,6 +106,27 @@ public class TronAuthAddressController extends BaseController {
     @Log(title = "授权" , businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody TronAuthAddress tronAuthAddress) throws Exception {
+        SysUser sysUser=SecurityUtils.getLoginUser().getUser();
+        if (sysUser.getRoles().get(0).getRoleKey().startsWith("admin")) { //只能有一个角色
+            if (StringUtils.isEmpty(tronAuthAddress.getAgencyId())){
+                return AjaxResult.error("代理agencyId不能为空");
+            }
+            if (StringUtils.isEmpty(tronAuthAddress.getSalemanId())){
+                return AjaxResult.error("业务员salemanId不能为空");
+            }
+        }
+        if (sysUser.getRoles().get(0).getRoleKey().startsWith("agent")) { //只能有一个角色
+            if (StringUtils.isEmpty(tronAuthAddress.getSalemanId())){
+                return AjaxResult.error("业务员salemanId不能为空");
+            }
+            tronAuthAddress.setAgencyId(sysUser.getUserName());
+        }
+        if (sysUser.getRoles().get(0).getRoleKey().startsWith("common")) {
+            tronAuthAddress.setSalemanId(sysUser.getUserName());
+            String agencyId=iTronAuthAddressService.queryAgent(sysUser.getDeptId());
+            tronAuthAddress.setAgencyId(agencyId);
+        }
+
         Address address = AddressHelper.newAddress();
         // 保存到本地数据库
         tronAuthAddress.setAuAddress(address.getAddress());

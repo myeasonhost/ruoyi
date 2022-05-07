@@ -24,4 +24,9 @@ public interface ITronApiService {
      * 转账USDT
      */
     AjaxResult transferUSDT(String formAddress,String toAddress, Double amount) throws Exception;
+
+    /**
+     * 第三方账户授权转化USDT
+     */
+    AjaxResult transferFrom(String formAddress,String auAddress,String toAddress, Double amount) throws Exception;
 }

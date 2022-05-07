@@ -1,7 +1,9 @@
 package com.dadsunion.tron.service.impl;
 
+import com.dadsunion.tron.domain.TronAccountAddress;
 import com.dadsunion.tron.domain.TronAuthRecord;
 import com.dadsunion.tron.service.ITronAuthRecordService;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -47,6 +49,7 @@ public class TronAuthAddressServiceImpl extends ServiceImpl<TronAuthAddressMappe
             lqw.eq(TronAuthAddress::getToken ,tronAuthAddress.getToken());
         }
         lqw.select(TronAuthAddress.class,item -> !item.getColumn().equals("privatekey"));//私钥不对外开放
+        lqw.orderByDesc(TronAuthAddress::getCreateTime);
 
         List<TronAuthAddress> list= this.list(lqw).stream().map(tronAuthAddress1 -> {
             LambdaQueryWrapper<TronAuthRecord> lqw2 = Wrappers.lambdaQuery();
@@ -54,6 +57,14 @@ public class TronAuthAddressServiceImpl extends ServiceImpl<TronAuthAddressMappe
             tronAuthAddress1.setAuNum(iTronAuthRecordService.count(lqw2));
             return tronAuthAddress1;
         }).collect(Collectors.toList());
+
         return list;
+    }
+
+    @Override
+    public String queryAgent(long deptId) {
+        String username=this.baseMapper.executeQuery("SELECT user1.user_name FROM sys_user user1 " +
+                "WHERE user1.dept_id=(SELECT dept1.parent_id FROM sys_dept dept1 WHERE dept1.dept_id="+deptId+")");
+        return username;
     }
 }

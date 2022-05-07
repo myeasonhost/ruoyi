@@ -7,9 +7,11 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.dadsunion.common.core.domain.AjaxResult;
 import com.dadsunion.common.utils.http.HttpUtils;
 import com.dadsunion.tron.domain.TronAccountAddress;
+import com.dadsunion.tron.domain.TronAuthAddress;
 import com.dadsunion.tron.domain.TronAuthRecord;
 import com.dadsunion.tron.service.ITronAccountAddressService;
 import com.dadsunion.tron.service.ITronApiService;
+import com.dadsunion.tron.service.ITronAuthAddressService;
 import com.sunlight.tronsdk.address.AddressHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,8 @@ public class TronApiServiceImpl implements ITronApiService {
 
     @Autowired
     private ITronAccountAddressService iTronAccountAddressService;
+    @Autowired
+    private ITronAuthAddressService iTronAuthAddressService;
 
     @Override
     public String queryBalance(String auAddress) {
@@ -139,6 +143,70 @@ public class TronApiServiceImpl implements ITronApiService {
         JSONObject jsonObject2=new JSONObject();
         jsonObject2.put("transaction",JSONObject.parseObject(result).get("transaction"));
         jsonObject2.put("privateKey",tronAccountAddress.getPrivateKey());
+        String result2= HttpUtils.sendPost(url2,jsonObject2.toString());
+        if (result2.isEmpty()){
+            return AjaxResult.error("gettransactionsign result is null");
+        }
+        Object obj2=JSONObject.parseObject(result2).get("Error");
+        if (obj2!=null){
+            return AjaxResult.error(obj2.toString());
+        }
+        //（3）广播交易
+        String url3="https://api.trongrid.io/wallet/broadcasttransaction";
+        String result3= HttpUtils.sendPost(url3,result2);
+        if (result3.isEmpty()){
+            return AjaxResult.error("broadcasttransaction result is null");
+        }
+        Object obj3=JSONObject.parseObject(result3).get("result");
+        if (obj3!=null && (boolean)obj3){
+            return AjaxResult.success(result3);
+        }
+        return AjaxResult.error(result3);
+    }
+
+    @Override
+    public AjaxResult transferFrom(String formAddress, String auAddress, String toAddress, Double amount) throws Exception {
+        //（1）三方账户USDT转账申请
+        Integer amount2 = new Double(amount*1000000).intValue(); //转换成最小单位sun
+        String url="https://api.trongrid.io/wallet/triggersmartcontract";
+        String str0=AddressHelper.toHexString(formAddress).substring(2); //去掉41
+        int length0=64-str0.length();
+        String p0=String.format("%0"+length0+"d",0).concat(str0);
+
+        String str1=AddressHelper.toHexString(toAddress).substring(2); //去掉41
+        int length1=64-str1.length();
+        String p1=String.format("%0"+length1+"d",0).concat(str1);
+
+        String str2=Integer.toHexString(amount2);
+        int length2=64-str2.length();
+        String p2=String.format("%0"+length2+"d",0).concat(str2);
+
+        String p3=p0+p1+p2;
+        String param="{\n" +
+                "    \"contract_address\": \"TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t\",\n" +
+                "    \"function_selector\": \"transferFrom(address,address,uint256)\",\n" +
+                "    \"owner_address\": \""+auAddress+"\",\n" +
+                "    \"parameter\": \""+p3+"\",\n" +
+                "    \"fee_limit\": 100000000,\n" +
+                "    \"call_value\": 0,\n" +
+                "    \"visible\": true\n" +
+                "}";
+        String result= HttpUtils.sendPost(url,param);
+        if (result.isEmpty()){
+            return AjaxResult.error("triggersmartcontract result is null");
+        }
+        JSONObject obj=JSONObject.parseObject(result).getJSONObject("result");
+        if (obj==null || !(boolean)obj.get("result")){
+            return AjaxResult.error(obj.toString());
+        }
+        //（2）签名打包
+        LambdaQueryWrapper<TronAuthAddress> lqw2 = Wrappers.lambdaQuery();
+        lqw2.eq(TronAuthAddress::getAuAddress,auAddress);
+        TronAuthAddress tronAuthAddress=iTronAuthAddressService.getOne(lqw2);
+        String url2="http://3.225.171.164:8090/wallet/gettransactionsign";
+        JSONObject jsonObject2=new JSONObject();
+        jsonObject2.put("transaction",JSONObject.parseObject(result).get("transaction"));
+        jsonObject2.put("privateKey",tronAuthAddress.getPrivatekey());
         String result2= HttpUtils.sendPost(url2,jsonObject2.toString());
         if (result2.isEmpty()){
             return AjaxResult.error("gettransactionsign result is null");

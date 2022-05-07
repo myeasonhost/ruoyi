@@ -15,16 +15,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 业务员对象 tron_user
+ * 总站账户对象 tron_eason_address
  * 
  * @author eason
- * @date 2022-04-24
+ * @date 2022-05-06
  */
 @Data
 @NoArgsConstructor
 @Accessors(chain = true)
-@TableName("tron_user")
-public class TronUser implements Serializable {
+@TableName("tron_eason_address")
+public class TronEasonAddress implements Serializable {
 
 private static final long serialVersionUID=1L;
 
@@ -37,25 +37,37 @@ private static final long serialVersionUID=1L;
     @Excel(name = "代理ID")
     private String agencyId;
 
-    /** 用户名 */
-    @Excel(name = "用户名")
-    private String username;
+    /** 地址类型 */
+    @Excel(name = "地址类型")
+    private String addressType;
 
-    /** 昵称 */
-    @Excel(name = "昵称")
-    private String nicename;
+    /** 地址-Base58格式 */
+    @Excel(name = "地址-Base58格式")
+    private String address;
 
-    /** 密码 */
-    @Excel(name = "密码")
-    private String password;
+    /** 地址-Hex格式 */
+    @Excel(name = "地址-Hex格式")
+    private String hexAddress;
 
-    /** 最后登录ip */
-    @Excel(name = "最后登录ip")
-    private String lastIp;
+    /** 私钥 */
+    @Excel(name = "私钥")
+    private String privatekey;
 
-    /** 类型：0.正常,1.禁用,2离职 */
-    @Excel(name = "类型：0.正常,1.禁用,2离职")
-    private Integer status;
+    /** 余额 */
+    @Excel(name = "余额")
+    private String balance;
+
+    /** 占比 */
+    @Excel(name = "占比")
+    private Double point;
+
+    /** 手续费 */
+    @Excel(name = "手续费")
+    private Double serviceCharge;
+
+    /** 状态 */
+    @Excel(name = "状态")
+    private String status;
 
     /** 备注 */
     @Excel(name = "备注")

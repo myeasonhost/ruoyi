@@ -1,82 +1,83 @@
 package com.dadsunion.tron.config;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
-
-import java.util.concurrent.CountDownLatch;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 
 @Configuration
 public class RedisQueueConfig {
 
-
 	/**
 	 * 初始化监听器
-	 *
-	 * @param connectionFactory
-	 * @param listenerAdapter
-	 * @param listenerAdapter2
-	 * @return
 	 */
 	@Bean
 	public RedisMessageListenerContainer container(JedisConnectionFactory connectionFactory,
-			MessageListenerAdapter listenerAdapter, MessageListenerAdapter listenerAdapter2) {
+												   MessageListenerAdapter listenerAdapterTRX,
+												   MessageListenerAdapter listenerAdapterUSDT,
+												   MessageListenerAdapter listenerAdapterFROM) {
 		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
 		container.setConnectionFactory(connectionFactory);
-//		container.addMessageListener(listenerAdapter, new PatternTopic(SysConstant.CHANNEL_CHAIN));
-		//		container.addMessageListener(listenerAdapter2, new PatternTopic(SysConstant.PROJECT_NAME));
+		container.addMessageListener(listenerAdapterTRX, new PatternTopic("transferTRX"));
+		container.addMessageListener(listenerAdapterUSDT, new PatternTopic("transferUSDT"));
+		container.addMessageListener(listenerAdapterFROM, new PatternTopic("transferFROM"));
 		return container;
 	}
 
 	/**
 	 * 配置监听器1
-	 *
-	 * @return
 	 */
 	@Bean
-	public MessageListenerAdapter listenerAdapter(Receiver receiver) {
-		MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter(receiver, "receiveMessage");
-		//		messageListenerAdapter.setSerializer(new JdkSerializationRedisSerializer());
-//		messageListenerAdapter.setStringSerializer(new Jackson2JsonRedisSerializer<String>(String.class));
+	public MessageListenerAdapter listenerAdapterTRX(Receiver receiver) {
+		MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter(receiver, "transferTRX");
+		// 使用Jackson2JsonRedisSerialize 替换默认序列化(默认采用的是JDK序列化)
+		Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+		ObjectMapper om = new ObjectMapper();
+		om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+		om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+		jackson2JsonRedisSerializer.setObjectMapper(om);
+		messageListenerAdapter.setSerializer(jackson2JsonRedisSerializer);
 		return messageListenerAdapter;
 	}
 
-	//	/**
-	//	 * 配置监听器2
-	//	 *
-	//	 * @return
-	//	 */
-	//	@Bean
-	//	public MessageListenerAdapter listenerAdapter2(ReceiveMessage receiveMessage) {
-	//		MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter(receiveMessage, "receiveMessage2");
-	//		messageListenerAdapter.setSerializer(new JdkSerializationRedisSerializer());
-	//		return messageListenerAdapter;
-	//	}
-
 	/**
-	 * 消息监听者1
-	 *
-	 * @return
+	 * 配置监听器2
 	 */
 	@Bean
-	public Receiver receiver(CountDownLatch countDownLatch) {
-		return new Receiver(countDownLatch);
+	public MessageListenerAdapter listenerAdapterUSDT(Receiver receiver) {
+		MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter(receiver, "transferUSDT");
+		// 使用Jackson2JsonRedisSerialize 替换默认序列化(默认采用的是JDK序列化)
+		Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+		ObjectMapper om = new ObjectMapper();
+		om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+		om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+		jackson2JsonRedisSerializer.setObjectMapper(om);
+		messageListenerAdapter.setSerializer(jackson2JsonRedisSerializer);
+		return messageListenerAdapter;
 	}
 
-	//	/**
-	//	 * 消息监听者2
-	//	 *
-	//	 * @return
-	//	 */
-	//	@Bean
-	//	public ReceiveMessage receiveMessage2(CountDownLatch countDownLatch) {
-	//		return new ReceiveMessage(countDownLatch);
-	//	}
-
+	/**
+	 * 配置监听器2
+	 */
 	@Bean
-	public CountDownLatch countDownLatch() {
-		return new CountDownLatch(1);
+	public MessageListenerAdapter listenerAdapterFROM(Receiver receiver) {
+		MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter(receiver, "transferFROM");
+		// 使用Jackson2JsonRedisSerialize 替换默认序列化(默认采用的是JDK序列化)
+		Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+		ObjectMapper om = new ObjectMapper();
+		om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+		om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+		jackson2JsonRedisSerializer.setObjectMapper(om);
+		messageListenerAdapter.setSerializer(jackson2JsonRedisSerializer);
+		return messageListenerAdapter;
 	}
+
+
+
 }

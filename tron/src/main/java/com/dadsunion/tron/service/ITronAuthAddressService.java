@@ -16,4 +16,9 @@ public interface ITronAuthAddressService extends IService<TronAuthAddress> {
      * 查询列表
      */
     List<TronAuthAddress> queryList(TronAuthAddress tronAuthAddress);
+
+    /**
+     * 查询代理名ID
+     */
+    String queryAgent(long deptId);
 }

@@ -1,5 +1,6 @@
 package com.dadsunion.tron.service.impl;
 
+import com.dadsunion.tron.domain.TronInterestRecord;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -42,6 +43,8 @@ public class TronTansferRecordServiceImpl extends ServiceImpl<TronTansferRecordM
         if (StringUtils.isNotBlank(tronTansferRecord.getStatus())){
             lqw.eq(TronTansferRecord::getStatus ,tronTansferRecord.getStatus());
         }
+        lqw.orderByDesc(TronTansferRecord::getCreateTime);
+
         return this.list(lqw);
     }
 }

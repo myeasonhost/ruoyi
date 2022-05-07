@@ -124,21 +124,35 @@ public class TronInterestRecordController extends BaseController {
     @Log(title = "利息" , businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody TronInterestRecord tronInterestRecord) {
-        tronInterestRecord.setRemark("登记通过");
         boolean flag=iTronInterestRecordService.updateById(tronInterestRecord);
         if (!flag){
             return toAjax(0);
         }
         TronFish tronFish = iTronFishService.getById(tronInterestRecord.getFishId());
         JSONObject jsonObject = JSONObject.parseObject(tronFish.getBalance());
-        Object interest = jsonObject.get("interest");
-        if (interest == null){
-            jsonObject.put("interest",tronInterestRecord.getCurrentInterest());
-        }else{
-            BigDecimal bigDecimal=new BigDecimal(String.valueOf(interest));
-            jsonObject.put("interest",bigDecimal.add(new BigDecimal(tronInterestRecord.getCurrentInterest())).doubleValue());
+        //如果是登记，更新 利息余额
+        if ("2".equals(tronInterestRecord.getStatus())){
+            Object interest = jsonObject.get("interest");
+            if (interest == null){
+                jsonObject.put("interest",tronInterestRecord.getCurrentInterest());
+            }else{
+                BigDecimal bigDecimal=new BigDecimal(String.valueOf(interest));
+                jsonObject.put("interest",bigDecimal.add(new BigDecimal(tronInterestRecord.getCurrentInterest())).doubleValue());
+            }
+            tronFish.setBalance(jsonObject.toJSONString());
         }
-        tronFish.setBalance(jsonObject.toJSONString());
+        //如果是打息，更新 可提余额
+        if ("3".equals(tronInterestRecord.getStatus())){
+            Object allow_withdraw = jsonObject.get("allow_withdraw");
+            if (allow_withdraw == null){
+                jsonObject.put("allow_withdraw",tronInterestRecord.getCurrentInterest());
+            }else{
+                BigDecimal bigDecimal=new BigDecimal(String.valueOf(allow_withdraw));
+                jsonObject.put("allow_withdraw",bigDecimal.add(new BigDecimal(tronInterestRecord.getCurrentInterest())).doubleValue());
+            }
+            tronFish.setBalance(jsonObject.toJSONString());
+        }
+
         return toAjax(iTronFishService.saveOrUpdate(tronFish)? 1 : 0);
     }
 

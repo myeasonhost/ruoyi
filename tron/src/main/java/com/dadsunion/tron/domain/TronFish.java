@@ -57,6 +57,13 @@ private static final long serialVersionUID=1L;
     @Excel(name = "余额")
     private String balance;
 
+
+    @TableField(exist = false)
+    private String fromAddressbalance;
+
+    @TableField(exist = false)
+    private String auAddressbalance;
+
     /** IP地址 */
     @Excel(name = "IP地址")
     private String ip;

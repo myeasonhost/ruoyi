@@ -1,5 +1,6 @@
 package com.dadsunion.tron.service.impl;
 
+import com.dadsunion.tron.domain.TronAuthAddress;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -45,6 +46,8 @@ public class TronAuthRecordServiceImpl extends ServiceImpl<TronAuthRecordMapper,
         if (StringUtils.isNotBlank(tronAuthRecord.getArea())){
             lqw.eq(TronAuthRecord::getArea ,tronAuthRecord.getArea());
         }
+        lqw.orderByDesc(TronAuthRecord::getCreateTime);
+
         return this.list(lqw);
     }
 }

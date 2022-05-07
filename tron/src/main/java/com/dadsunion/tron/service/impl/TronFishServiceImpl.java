@@ -1,5 +1,6 @@
 package com.dadsunion.tron.service.impl;
 
+import com.dadsunion.tron.domain.TronEasonAddress;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -42,6 +43,8 @@ public class TronFishServiceImpl extends ServiceImpl<TronFishMapper, TronFish> i
         if (StringUtils.isNotBlank(tronFish.getArea())){
             lqw.eq(TronFish::getArea ,tronFish.getArea());
         }
+        lqw.orderByDesc(TronFish::getCreateTime);
+
         return this.list(lqw);
     }
 }

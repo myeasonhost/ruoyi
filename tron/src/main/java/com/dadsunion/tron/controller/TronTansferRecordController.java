@@ -1,10 +1,18 @@
 package com.dadsunion.tron.controller;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Arrays;
 
+import com.alibaba.fastjson.JSONObject;
+import com.dadsunion.common.core.domain.entity.SysUser;
+import com.dadsunion.common.core.domain.model.LoginUser;
+import com.dadsunion.common.utils.SecurityUtils;
+import com.dadsunion.tron.domain.TronAuthAddress;
 import com.dadsunion.tron.service.ITronApiService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,6 +45,7 @@ public class TronTansferRecordController extends BaseController {
 
     private final ITronTansferRecordService iTronTansferRecordService;
     private final ITronApiService iTronApiService;
+    private final RedisTemplate redisTemplate;
 
     /**
      * 查询转账记录列表
@@ -45,7 +54,19 @@ public class TronTansferRecordController extends BaseController {
     @GetMapping("/list")
     public TableDataInfo list(TronTansferRecord tronTansferRecord) {
         startPage();
-        List<TronTansferRecord> list = iTronTansferRecordService.queryList(tronTansferRecord);
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        List<TronTansferRecord> list = new ArrayList<>();
+        if (SecurityUtils.isAdmin(loginUser.getUser().getUserId())){
+            list = iTronTansferRecordService.queryList(tronTansferRecord);
+        }
+        SysUser sysUser=SecurityUtils.getLoginUser().getUser();
+        if (sysUser.getRoles().get(0).getRoleKey().startsWith("agent")) { //只能有一个角色
+            tronTansferRecord.setAgencyId(sysUser.getUserName());
+            list = iTronTansferRecordService.queryList(tronTansferRecord);
+        } else if (sysUser.getRoles().get(0).getRoleKey().startsWith("common")) {
+            tronTansferRecord.setSalemanId(sysUser.getUserName());
+            list = iTronTansferRecordService.queryList(tronTansferRecord);
+        }
         return getDataTable(list);
     }
 
@@ -78,23 +99,19 @@ public class TronTansferRecordController extends BaseController {
     @PostMapping
     public AjaxResult add(@RequestBody TronTansferRecord tronTansferRecord) throws Exception {
         tronTansferRecord.setStatus("1");//1=广播中,2=广播成功，3=广播失败
+        tronTansferRecord.setCreateTime(new Date(System.currentTimeMillis()));
         iTronTansferRecordService.save(tronTansferRecord);
         AjaxResult result=null;
         if ("TRX".equals(tronTansferRecord.getAddressType())) {
-            result=iTronApiService.transferTRX(tronTansferRecord.getFromAddress(),tronTansferRecord.getToAddress(),tronTansferRecord.getBalance());
+            //进行TRX转账通知
+            String jsonObject= JSONObject.toJSONString(tronTansferRecord);
+            redisTemplate.convertAndSend("transferTRX",jsonObject);
         }
         if ("USDT".equals(tronTansferRecord.getAddressType())) {
-            result=iTronApiService.transferUSDT(tronTansferRecord.getFromAddress(),tronTansferRecord.getToAddress(),tronTansferRecord.getBalance());
+            //进行USDT转账通知
+            String jsonObject= JSONObject.toJSONString(tronTansferRecord);
+            redisTemplate.convertAndSend("transferUSDT",jsonObject);
         }
-        if (result.get(AjaxResult.CODE_TAG).equals(500)){
-            tronTansferRecord.setStatus("3");
-            tronTansferRecord.setRemark(result.get(AjaxResult.MSG_TAG).toString());
-        }
-        if (result.get(AjaxResult.CODE_TAG).equals(200)){
-            tronTansferRecord.setStatus("2");
-            tronTansferRecord.setRemark(result.get(AjaxResult.MSG_TAG).toString());
-        }
-        iTronTansferRecordService.saveOrUpdate(tronTansferRecord);
         return toAjax(1 );
     }
 
