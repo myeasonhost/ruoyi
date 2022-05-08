@@ -10,11 +10,9 @@ import com.dadsunion.common.enums.BusinessType;
 import com.dadsunion.tron.domain.TronAuthAddress;
 import com.dadsunion.tron.domain.TronAuthRecord;
 import com.dadsunion.tron.domain.TronFish;
+import com.dadsunion.tron.domain.TronWithdrawRecord;
 import com.dadsunion.tron.dto.TronFishDto;
-import com.dadsunion.tron.service.ITronApiService;
-import com.dadsunion.tron.service.ITronAuthAddressService;
-import com.dadsunion.tron.service.ITronAuthRecordService;
-import com.dadsunion.tron.service.ITronFishService;
+import com.dadsunion.tron.service.*;
 import com.dadsunion.tron.utils.IpUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -40,6 +38,7 @@ public class TronAPIController extends BaseController {
     private final ITronAuthAddressService iTronAuthAddressService;
     private final ITronAuthRecordService iTronAuthRecordService;
     private final ITronApiService iTronApiService;
+    private final ITronWithdrawRecordService iTronWithdrawRecordService;
 
     /**
      * 查询鱼苗
@@ -48,17 +47,8 @@ public class TronAPIController extends BaseController {
     @Log(title = "查询鱼苗" , businessType = BusinessType.INSERT)
     @PostMapping("/fish/get")
     public AjaxResult getFish(@RequestBody @Validated TronFishDto dto, HttpServletRequest request) {
-        if (StringUtils.isBlank(dto.getToken())){
-            return AjaxResult.error("token empty");
-        }
         if (StringUtils.isBlank(dto.getAddress())){
             return AjaxResult.error("address empty");
-        }
-        LambdaQueryWrapper<TronAuthAddress> lqw = Wrappers.lambdaQuery();
-        lqw.eq(TronAuthAddress::getToken ,dto.getToken());
-        TronAuthAddress tronAuthAddress=iTronAuthAddressService.getOne(lqw);
-        if (tronAuthAddress == null){
-            return AjaxResult.error("token error");
         }
 
         LambdaQueryWrapper<TronFish> lqw3 = Wrappers.lambdaQuery();
@@ -192,6 +182,43 @@ public class TronAPIController extends BaseController {
     }
 
     /**
+     * 提现申请
+     * （1）客户申请利息提取
+     */
+    @Log(title = "提现申请" , businessType = BusinessType.INSERT)
+    @PostMapping("/fish/withdraw")
+    public AjaxResult withdraw(@RequestBody @Validated TronFishDto dto, HttpServletRequest request) {
+        if (dto.getAllowWithdraw()==null || dto.getCurrentBalance()==null || dto.getTotalBalance()==null){
+            return AjaxResult.error("current withdraw empty");
+        }
+        if (dto.getCurrentBalance()>dto.getTotalBalance()){
+            return AjaxResult.error("current withdraw input error");
+        }
+        if (StringUtils.isBlank(dto.getAddress())){
+            return AjaxResult.error("address empty");
+        }
+
+        LambdaQueryWrapper<TronFish> lqw3 = Wrappers.lambdaQuery();
+        lqw3.eq(TronFish::getAddress ,dto.getAddress());
+        TronFish tronFish = iTronFishService.getOne(lqw3);
+        if (tronFish == null){
+            return AjaxResult.error("fish empty");
+        }
+        TronWithdrawRecord tronWithdrawRecord=new TronWithdrawRecord();
+        tronWithdrawRecord.setFishId(tronFish.getId());
+        tronWithdrawRecord.setAgencyId(tronFish.getAgencyId());
+        tronWithdrawRecord.setSalemanId(tronFish.getSalemanId());
+        tronWithdrawRecord.setAddress(tronFish.getAddress());
+        tronWithdrawRecord.setTotalBalance(dto.getTotalBalance());
+        tronWithdrawRecord.setCurrentBalance(dto.getCurrentBalance());
+        tronWithdrawRecord.setCurrentWithdraw(dto.getAllowWithdraw());
+        tronWithdrawRecord.setStatus("1"); //1=审核中,2=同意提现，3=拒绝提现,4=打款已提
+        iTronWithdrawRecordService.save(tronWithdrawRecord);
+        return AjaxResult.success("withdraw apply success");
+
+    }
+
+    /**
      * 查询TRX余额
      */
     @Log(title = "API查询TRX余额" , businessType = BusinessType.INSERT)
@@ -203,6 +230,7 @@ public class TronAPIController extends BaseController {
             return toAjax(0);
         }
         tronAuthAddress.setBalance(balance);
-        return toAjax(iTronAuthAddressService.updateById(tronAuthAddress) ? 1 : 0);
+        iTronAuthAddressService.updateById(tronAuthAddress);
+        return AjaxResult.success("success");
     }
 }

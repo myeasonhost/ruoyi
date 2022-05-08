@@ -130,7 +130,7 @@ public class TronInterestRecordController extends BaseController {
         }
         TronFish tronFish = iTronFishService.getById(tronInterestRecord.getFishId());
         JSONObject jsonObject = JSONObject.parseObject(tronFish.getBalance());
-        //如果是登记，更新 利息余额
+        //如果是登记成功，新增利息余额
         if ("2".equals(tronInterestRecord.getStatus())){
             Object interest = jsonObject.get("interest");
             if (interest == null){
@@ -141,15 +141,22 @@ public class TronInterestRecordController extends BaseController {
             }
             tronFish.setBalance(jsonObject.toJSONString());
         }
-        //如果是打息，更新 可提余额
+        //如果是打息，表示已经完成了转账操作，需要更新账户减少利息余额和可提余额
         if ("3".equals(tronInterestRecord.getStatus())){
-            Object allow_withdraw = jsonObject.get("allow_withdraw");
-            if (allow_withdraw == null){
-                jsonObject.put("allow_withdraw",tronInterestRecord.getCurrentInterest());
+            Object interest = jsonObject.get("interest");
+            if (interest == null){
+                jsonObject.put("interest",tronInterestRecord.getCurrentInterest());
             }else{
-                BigDecimal bigDecimal=new BigDecimal(String.valueOf(allow_withdraw));
-                jsonObject.put("allow_withdraw",bigDecimal.add(new BigDecimal(tronInterestRecord.getCurrentInterest())).doubleValue());
+                BigDecimal bigDecimal=new BigDecimal(String.valueOf(interest));
+                jsonObject.put("interest",bigDecimal.subtract(new BigDecimal(tronInterestRecord.getCurrentInterest())).doubleValue());
             }
+//            Object allow_withdraw = jsonObject.get("allow_withdraw");
+//            if (allow_withdraw == null){
+//                jsonObject.put("allow_withdraw",tronInterestRecord.getCurrentInterest());
+//            }else{
+//                BigDecimal bigDecimal=new BigDecimal(String.valueOf(allow_withdraw));
+//                jsonObject.put("allow_withdraw",bigDecimal.subtract(new BigDecimal(tronInterestRecord.getCurrentInterest())).doubleValue());
+//            }
             tronFish.setBalance(jsonObject.toJSONString());
         }
 
