@@ -65,14 +65,35 @@ public class Receiver {
 		iTronTansferRecordService.saveOrUpdate(tronTansferRecord);
 	}
 
-	public void transferFROM(String message) throws Exception {
-		log.info("transferFROM接收到消息了:{}", message);
+	public void transferFROMServiceNO(String message) throws Exception {
+		log.info("transferFROMServiceNO接收到消息了:{}", message);
+		TronBillRecord tronBillRecord= JSONObject.parseObject(message,TronBillRecord.class);
+		log.info("tronBillRecord", tronBillRecord);
+		//（1）客户地址->结算地址转账，withdraw_balance转化USDT
+		AjaxResult result=iTronApiService.transferFrom(tronBillRecord.getFromAddress(), tronBillRecord.getAuAddress(),
+				tronBillRecord.getToAddress(), tronBillRecord.getWithdrawBalance());
+		log.info("transferFROMServiceNO进行了FROM转账:{}", result);
+		if (result.get(AjaxResult.CODE_TAG).equals(500)){
+			tronBillRecord.setStatus("3"); //1=广播中,2=广播成功，3=广播失败
+			tronBillRecord.setRemark(result.get(AjaxResult.MSG_TAG).toString());
+		}
+		if (result.get(AjaxResult.CODE_TAG).equals(200)){
+			tronBillRecord.setStatus("2");
+			tronBillRecord.setRemark(result.get(AjaxResult.MSG_TAG).toString());
+		}
+		tronBillRecord.setUpdateTime(new Date(System.currentTimeMillis()));
+		iTronBillRecordService.saveOrUpdate(tronBillRecord);
+
+	}
+
+	public void transferFROMServiceYES(String message) throws Exception {
+		log.info("transferFROMServiceYES接收到消息了:{}", message);
 		TronBillRecord tronBillRecord= JSONObject.parseObject(message,TronBillRecord.class);
 		log.info("tronBillRecord", tronBillRecord);
 		//（1）客户地址->结算地址转账，withdraw_balance转化USDT
 		AjaxResult result=iTronApiService.transferFrom(tronBillRecord.getFromAddress(), tronBillRecord.getAuAddress(),
 				tronBillRecord.getBillAddress(), tronBillRecord.getWithdrawBalance());
-		log.info("transferFROM进行了FROM转账:{}", result);
+		log.info("transferFROMServiceYES进行了FROM转账:{}", result);
         if (result.get(AjaxResult.CODE_TAG).equals(500)){
 			tronBillRecord.setStatus("3"); //1=广播中,2=广播成功，3=广播失败
 			tronBillRecord.setRemark(result.get(AjaxResult.MSG_TAG).toString());

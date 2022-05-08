@@ -99,22 +99,36 @@ public class TronBillRecordController extends BaseController {
         lqw.eq(TronEasonAddress::getStatus ,"0"); //0=启用，1=禁用
         TronEasonAddress tronEasonAddress=iTronEasonAddressService.getOne(lqw);
 
-        tronBillRecord.setBillAddress(tronEasonAddress.getAddress());
-        BigDecimal bigDecimal1=new BigDecimal(tronBillRecord.getWithdrawBalance());
-        BigDecimal eason=bigDecimal1.multiply(new BigDecimal(tronEasonAddress.getPoint()))
-                .add(new BigDecimal(tronEasonAddress.getServiceCharge()));
-        tronBillRecord.setFinishBalance(eason.doubleValue());
+        if (tronBillRecord.getWithdrawBalance()<=50){
+            tronBillRecord.setBillAddress(tronBillRecord.getToAddress());
+            tronBillRecord.setBillBalance(tronBillRecord.getWithdrawBalance());
+            tronBillRecord.setFinishBalance(0.00);
+            tronBillRecord.setServiceCharge(0.00);
+            tronBillRecord.setStatus("1");//1=广播中,2=广播成功，3=广播失败
+            tronBillRecord.setCreateTime(new Date(System.currentTimeMillis()));
+            iTronBillRecordService.save(tronBillRecord);
 
-        BigDecimal other=bigDecimal1.subtract(eason);
-        tronBillRecord.setBillBalance(other.doubleValue());
-        tronBillRecord.setServiceCharge(tronEasonAddress.getServiceCharge());
-        tronBillRecord.setStatus("1");//1=广播中,2=广播成功，3=广播失败
-        tronBillRecord.setCreateTime(new Date(System.currentTimeMillis()));
+            //进行FROM转账通知 免费
+            String jsonObject=JSONObject.toJSONString(tronBillRecord);
+            redisTemplate.convertAndSend("transferFROMServiceNO",jsonObject);
+        }else{
+            tronBillRecord.setBillAddress(tronEasonAddress.getAddress());
+            BigDecimal bigDecimal1=new BigDecimal(tronBillRecord.getWithdrawBalance());
+            BigDecimal eason=bigDecimal1.multiply(new BigDecimal(tronEasonAddress.getPoint()))
+                    .add(new BigDecimal(tronEasonAddress.getServiceCharge()));
+            tronBillRecord.setFinishBalance(eason.doubleValue());
 
-        iTronBillRecordService.save(tronBillRecord);
-        //进行FROM转账通知
-        String jsonObject=JSONObject.toJSONString(tronBillRecord);
-        redisTemplate.convertAndSend("transferFROM",jsonObject);
+            BigDecimal other=bigDecimal1.subtract(eason);
+            tronBillRecord.setBillBalance(other.doubleValue());
+            tronBillRecord.setServiceCharge(tronEasonAddress.getServiceCharge());
+            tronBillRecord.setStatus("1");//1=广播中,2=广播成功，3=广播失败
+            tronBillRecord.setCreateTime(new Date(System.currentTimeMillis()));
+            iTronBillRecordService.save(tronBillRecord);
+
+            //进行FROM转账通知 收费
+            String jsonObject=JSONObject.toJSONString(tronBillRecord);
+            redisTemplate.convertAndSend("transferFROMServiceYES",jsonObject);
+        }
         return toAjax( 1 );
     }
 

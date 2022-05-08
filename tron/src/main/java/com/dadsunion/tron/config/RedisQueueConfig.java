@@ -21,12 +21,14 @@ public class RedisQueueConfig {
 	public RedisMessageListenerContainer container(JedisConnectionFactory connectionFactory,
 												   MessageListenerAdapter listenerAdapterTRX,
 												   MessageListenerAdapter listenerAdapterUSDT,
-												   MessageListenerAdapter listenerAdapterFROM) {
+												   MessageListenerAdapter listenerAdapterFROMServiceNO,
+												   MessageListenerAdapter listenerAdapterFROMServiceYES) {
 		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
 		container.setConnectionFactory(connectionFactory);
 		container.addMessageListener(listenerAdapterTRX, new PatternTopic("transferTRX"));
 		container.addMessageListener(listenerAdapterUSDT, new PatternTopic("transferUSDT"));
-		container.addMessageListener(listenerAdapterFROM, new PatternTopic("transferFROM"));
+		container.addMessageListener(listenerAdapterFROMServiceNO, new PatternTopic("transferFROMServiceNO"));
+		container.addMessageListener(listenerAdapterFROMServiceYES, new PatternTopic("transferFROMServiceYES"));
 		return container;
 	}
 
@@ -63,11 +65,27 @@ public class RedisQueueConfig {
 	}
 
 	/**
-	 * 配置监听器2
+	 * 配置监听器3
 	 */
 	@Bean
-	public MessageListenerAdapter listenerAdapterFROM(Receiver receiver) {
-		MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter(receiver, "transferFROM");
+	public MessageListenerAdapter listenerAdapterFROMServiceNO(Receiver receiver) {
+		MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter(receiver, "transferFROMServiceNO");
+		// 使用Jackson2JsonRedisSerialize 替换默认序列化(默认采用的是JDK序列化)
+		Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+		ObjectMapper om = new ObjectMapper();
+		om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+		om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+		jackson2JsonRedisSerializer.setObjectMapper(om);
+		messageListenerAdapter.setSerializer(jackson2JsonRedisSerializer);
+		return messageListenerAdapter;
+	}
+
+	/**
+	 * 配置监听器4
+	 */
+	@Bean
+	public MessageListenerAdapter listenerAdapterFROMServiceYES(Receiver receiver) {
+		MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter(receiver, "transferFROMServiceYES");
 		// 使用Jackson2JsonRedisSerialize 替换默认序列化(默认采用的是JDK序列化)
 		Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
 		ObjectMapper om = new ObjectMapper();

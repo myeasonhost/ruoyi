@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -99,6 +100,7 @@ public class TronFishController extends BaseController {
             jsonObject1.put("trx",jsonObject2.get("trx"));
             jsonObject1.put("usdt",jsonObject2.get("usdt"));
             tronFish.setBalance(jsonObject1.toJSONString());
+            tronFish.setUpdateTime(new Date(System.currentTimeMillis()));
             iTronFishService.updateById(tronFish);
             return AjaxResult.success(balance);
         }
@@ -122,6 +124,7 @@ public class TronFishController extends BaseController {
     @Log(title = "鱼苗管理" , businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody TronFish tronFish) {
+        tronFish.setUpdateTime(new Date(System.currentTimeMillis()));
         return toAjax(iTronFishService.updateById(tronFish) ? 1 : 0);
     }
 
