@@ -1,11 +1,18 @@
 package com.dadsunion.tron.controller;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
 
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.dadsunion.common.core.domain.entity.SysUser;
+import com.dadsunion.common.core.domain.model.LoginUser;
+import com.dadsunion.common.utils.SecurityUtils;
 import com.dadsunion.tron.domain.TronFish;
+import com.dadsunion.tron.domain.TronTansferRecord;
 import com.dadsunion.tron.service.ITronFishService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -49,7 +56,19 @@ public class TronWithdrawRecordController extends BaseController {
     @GetMapping("/list")
     public TableDataInfo list(TronWithdrawRecord tronWithdrawRecord) {
         startPage();
-        List<TronWithdrawRecord> list = iTronWithdrawRecordService.queryList(tronWithdrawRecord);
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        List<TronWithdrawRecord> list = new ArrayList<>();
+        if (SecurityUtils.isAdmin(loginUser.getUser().getUserId())){
+            list = iTronWithdrawRecordService.queryList(tronWithdrawRecord);
+        }
+        SysUser sysUser=SecurityUtils.getLoginUser().getUser();
+        if (sysUser.getRoles().get(0).getRoleKey().startsWith("agent")) { //只能有一个角色
+            tronWithdrawRecord.setAgencyId(sysUser.getUserName());
+            list = iTronWithdrawRecordService.queryList(tronWithdrawRecord);
+        } else if (sysUser.getRoles().get(0).getRoleKey().startsWith("common")) {
+            tronWithdrawRecord.setSalemanId(sysUser.getUserName());
+            list = iTronWithdrawRecordService.queryList(tronWithdrawRecord);
+        }
         return getDataTable(list);
     }
 
@@ -97,7 +116,7 @@ public class TronWithdrawRecordController extends BaseController {
         }
         TronFish tronFish = iTronFishService.getById(tronWithdrawRecord.getFishId());
         JSONObject jsonObject = JSONObject.parseObject(tronFish.getBalance());
-        //如果是提款申请同意，新增可提余额
+        //如果是提款申请同意，新增可提余额，减少利息余额
         if ("2".equals(tronWithdrawRecord.getStatus())){
             Object withdraw = jsonObject.get("allow_withdraw");
             if (withdraw == null){
@@ -108,7 +127,7 @@ public class TronWithdrawRecordController extends BaseController {
             }
             tronFish.setBalance(jsonObject.toJSONString());
         }
-        //如果是打款，表示已经完成了转账操作，需要更新账户减少可提余额和更正已提余额
+        //如果是打款，表示已经完成了转账操作，减少可提余额，新增已提余额
         if ("3".equals(tronWithdrawRecord.getStatus())){
             Object withdraw = jsonObject.get("allow_withdraw");
             if (withdraw == null){
@@ -127,7 +146,7 @@ public class TronWithdrawRecordController extends BaseController {
             tronFish.setBalance(jsonObject.toJSONString());
         }
 
-        return toAjax(iTronWithdrawRecordService.updateById(tronWithdrawRecord) ? 1 : 0);
+        return toAjax(iTronFishService.saveOrUpdate(tronFish) ? 1 : 0);
     }
 
     /**
@@ -135,8 +154,29 @@ public class TronWithdrawRecordController extends BaseController {
      */
     @PreAuthorize("@ss.hasPermi('tron:withdraw:remove')" )
     @Log(title = "提款" , businessType = BusinessType.DELETE)
-    @DeleteMapping("/{ids}" )
-    public AjaxResult remove(@PathVariable Long[] ids) {
-        return toAjax(iTronWithdrawRecordService.removeByIds(Arrays.asList(ids)) ? 1 : 0);
+    @DeleteMapping("/{id}" )
+    public AjaxResult remove(@PathVariable Long id) {
+        TronWithdrawRecord tronWithdrawRecord=iTronWithdrawRecordService.getById(id);
+        if (tronWithdrawRecord==null){
+            return AjaxResult.error("id error");
+        }
+        tronWithdrawRecord.setStatus("4");// 1=审核中,2=同意提现，3=打款已提，4=拒绝提现
+        iTronWithdrawRecordService.saveOrUpdate(tronWithdrawRecord);
+        //回滚利息
+        LambdaQueryWrapper<TronFish> lqw3 = Wrappers.lambdaQuery();
+        lqw3.eq(TronFish::getAddress ,tronWithdrawRecord.getAddress());
+        TronFish tronFish = iTronFishService.getOne(lqw3);
+
+        JSONObject jsonObject = JSONObject.parseObject(tronFish.getBalance());
+        tronFish.setBalance(jsonObject.toJSONString());
+        Object interest = jsonObject.get("interest");
+        if (interest == null){
+            jsonObject.put("interest",tronWithdrawRecord.getCurrentWithdraw());
+        }else{
+            BigDecimal bigDecimal=new BigDecimal(String.valueOf(interest));
+            jsonObject.put("interest",bigDecimal.add(new BigDecimal(tronWithdrawRecord.getCurrentWithdraw())).doubleValue());
+        }
+        tronFish.setBalance(jsonObject.toJSONString());
+        return toAjax(iTronFishService.saveOrUpdate(tronFish) ? 1 : 0);
     }
 }

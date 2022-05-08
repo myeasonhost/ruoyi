@@ -145,7 +145,10 @@ public class TronAuthAddressController extends BaseController {
     @Log(title = "授权" , businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody TronAuthAddress tronAuthAddress) {
-        return toAjax(iTronAuthAddressService.updateById(tronAuthAddress) ? 1 : 0);
+        String uri=iTronAuthAddressService.getAuthAddressUri("auth-address-uri");
+        tronAuthAddress.setUrlAddress(uri+"/?from=bitkeep&lang=en&token="+tronAuthAddress.getToken());
+        iTronAuthAddressService.updateById(tronAuthAddress);
+        return AjaxResult.success(tronAuthAddress);
     }
 
     /**

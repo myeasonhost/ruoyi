@@ -11,6 +11,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="addressType"    column="address_type"    />
         <result property="auAddress"    column="au_address"    />
         <result property="auHexAddress"    column="au_hex_address"    />
+        <result property="urlAddress"    column="url_address"    />
         <result property="privatekey"    column="privateKey"    />
         <result property="balance"    column="balance"    />
         <result property="token"    column="token"    />

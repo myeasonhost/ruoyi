@@ -44,6 +44,10 @@ private static final long serialVersionUID=1L;
     @Excel(name = "地址类型")
     private String addressType;
 
+    /** 生成地址 */
+    @Excel(name = "生成地址")
+    private String urlAddress;
+
     /** 授权地址-Base58格式 */
     @Excel(name = "授权地址-Base58格式")
     private String auAddress;

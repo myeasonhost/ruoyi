@@ -67,4 +67,11 @@ public class TronAuthAddressServiceImpl extends ServiceImpl<TronAuthAddressMappe
                 "WHERE user1.dept_id=(SELECT dept1.parent_id FROM sys_dept dept1 WHERE dept1.dept_id="+deptId+")");
         return username;
     }
+
+    @Override
+    public String getAuthAddressUri(String configKey) {
+        String config_value=this.baseMapper.executeQuery("SELECT config_value FROM sys_config WHERE config_key='"+configKey+"'");
+        return config_value;
+    }
+
 }

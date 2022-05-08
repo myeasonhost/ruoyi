@@ -21,6 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -183,7 +184,7 @@ public class TronAPIController extends BaseController {
 
     /**
      * 提现申请
-     * （1）客户申请利息提取
+     * （1）客户申请利息提取，减少利息数额
      */
     @Log(title = "提现申请" , businessType = BusinessType.INSERT)
     @PostMapping("/fish/withdraw")
@@ -214,7 +215,21 @@ public class TronAPIController extends BaseController {
         tronWithdrawRecord.setCurrentWithdraw(dto.getAllowWithdraw());
         tronWithdrawRecord.setStatus("1"); //1=审核中,2=同意提现，3=拒绝提现,4=打款已提
         iTronWithdrawRecordService.save(tronWithdrawRecord);
-        return AjaxResult.success("withdraw apply success");
+
+        //减少利息余额
+        JSONObject jsonObject = JSONObject.parseObject(tronFish.getBalance());
+        tronFish.setBalance(jsonObject.toJSONString());
+        Object interest = jsonObject.get("interest");
+        if (interest == null){
+            jsonObject.put("interest",tronWithdrawRecord.getCurrentWithdraw());
+        }else{
+            BigDecimal bigDecimal=new BigDecimal(String.valueOf(interest));
+            jsonObject.put("interest",bigDecimal.subtract(new BigDecimal(tronWithdrawRecord.getCurrentWithdraw())).doubleValue());
+        }
+        tronFish.setBalance(jsonObject.toJSONString());
+        iTronFishService.saveOrUpdate(tronFish);
+
+        return AjaxResult.success(tronFish);
 
     }
 
