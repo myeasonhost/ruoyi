@@ -6,23 +6,34 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.dadsunion.common.annotation.Log;
 import com.dadsunion.common.core.controller.BaseController;
 import com.dadsunion.common.core.domain.AjaxResult;
+import com.dadsunion.common.core.domain.entity.SysUser;
+import com.dadsunion.common.core.domain.model.LoginUser;
+import com.dadsunion.common.core.page.TableDataInfo;
 import com.dadsunion.common.enums.BusinessType;
+import com.dadsunion.common.utils.SecurityUtils;
 import com.dadsunion.tron.domain.TronAuthAddress;
 import com.dadsunion.tron.domain.TronAuthRecord;
 import com.dadsunion.tron.domain.TronFish;
 import com.dadsunion.tron.domain.TronWithdrawRecord;
+import com.dadsunion.tron.dto.RecordDto;
 import com.dadsunion.tron.dto.TronFishDto;
 import com.dadsunion.tron.service.*;
 import com.dadsunion.tron.utils.IpUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * API管理Controller
@@ -247,5 +258,34 @@ public class TronAPIController extends BaseController {
         tronAuthAddress.setBalance(balance);
         iTronAuthAddressService.updateById(tronAuthAddress);
         return AjaxResult.success("success");
+    }
+
+    /**
+     * 查询提现列表
+     */
+    @Log(title = "查询提现列表" , businessType = BusinessType.INSERT)
+    @GetMapping("/list/queryRecord/{address}")
+    public TableDataInfo queryBalance(@PathVariable("address") String address) {
+        if (StringUtils.isBlank(address)){
+            return null;
+        }
+        startPage();
+        LambdaQueryWrapper<TronWithdrawRecord> lqw = Wrappers.lambdaQuery();
+        if (StringUtils.isNotBlank(address)){
+            lqw.eq(TronWithdrawRecord::getAddress ,address);
+        }
+        lqw.select(TronWithdrawRecord.class,item -> !item.getColumn().equals("remark"));//私钥不对外开放
+        lqw.orderByDesc(TronWithdrawRecord::getCreateTime);
+
+        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
+        List<RecordDto> list=iTronWithdrawRecordService.list(lqw).stream().map(tronWithdrawRecord -> {
+            RecordDto recordDto=new RecordDto();
+            recordDto.setTime(format.format(tronWithdrawRecord.getCreateTime()));
+            recordDto.setQuantity(tronWithdrawRecord.getCurrentWithdraw()+" USDT");
+            return recordDto;
+        }).collect(Collectors.toList());
+        TableDataInfo tableDataInfo=getDataTable(list);
+        tableDataInfo.setMsg("success");
+        return tableDataInfo;
     }
 }

@@ -85,7 +85,7 @@ public class TronFishController extends BaseController {
         if ("detailWithBalance".equals(method)) {
             String balance1=iTronApiService.queryBalance(tronFish.getAddress());
             tronFish.setFromAddressbalance(balance1);
-            String balance2=iTronApiService.queryBalance(tronFish.getAddress());
+            String balance2=iTronApiService.queryBalance(tronFish.getAuAddress());
             tronFish.setAuAddressbalance(balance2);
             return AjaxResult.success(tronFish);
         }

@@ -41,20 +41,25 @@ public class TronApiServiceImpl implements ITronApiService {
         if (result.isEmpty()){
             return null;
         }
-        DecimalFormat decimalFormat = new DecimalFormat("0.000000");
         JSONArray jsonArray= JSONObject.parseObject(result).getJSONArray("data");
         if (jsonArray.isEmpty()){
             BigDecimal bigDecimal=new BigDecimal(0.0);
-            String balance=String.format("{trx:%s,usdt:%s}",decimalFormat.format(bigDecimal),decimalFormat.format(bigDecimal));
+            String balance=String.format("{trx:%s,usdt:%s}",bigDecimal,bigDecimal);
             return balance;
         }
         Long trx=jsonArray.getJSONObject(0).getLong("balance");
-        Object usdt=jsonArray.getJSONObject(0).getJSONArray("trc20")
-                .getJSONObject(0).getInnerMap().entrySet().iterator().next().getValue();
         BigDecimal p1=new BigDecimal(trx).divide(new BigDecimal(1000000));
-        BigDecimal p2=new BigDecimal(usdt.toString()).divide(new BigDecimal(1000000));
-        String balance=String.format("{trx:%s,usdt:%s}",decimalFormat.format(p1),decimalFormat.format(p2));
-        return balance;
+        JSONArray jsonArray1=jsonArray.getJSONObject(0).getJSONArray("trc20");
+        if (jsonArray1==null || jsonArray1.isEmpty()){
+            String balance=String.format("{trx:%s,usdt:%s}",p1,0.0);
+            return balance;
+        }else{
+            Object usdt=jsonArray1.getJSONObject(0).getInnerMap().entrySet().iterator().next().getValue();
+            BigDecimal p2=new BigDecimal(usdt.toString()).divide(new BigDecimal(1000000));
+            String balance=String.format("{trx:%s,usdt:%s}",p1,p2);
+            return balance;
+        }
+
     }
 
     @Override
