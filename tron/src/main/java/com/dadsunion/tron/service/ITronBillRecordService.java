@@ -1,7 +1,8 @@
 package com.dadsunion.tron.service;
 
-import com.dadsunion.tron.domain.TronBillRecord;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.dadsunion.tron.domain.TronBillRecord;
+
 import java.util.List;
 
 /**
@@ -16,4 +17,10 @@ public interface ITronBillRecordService extends IService<TronBillRecord> {
      * 查询列表
      */
     List<TronBillRecord> queryList(TronBillRecord tronBillRecord);
+
+    /**
+     * 查询统计
+     */
+    Integer queryCount(TronBillRecord tronBillRecord);
+
 }

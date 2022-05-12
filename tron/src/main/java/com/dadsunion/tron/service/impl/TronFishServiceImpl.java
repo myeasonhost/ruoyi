@@ -1,17 +1,16 @@
 package com.dadsunion.tron.service.impl;
 
-import com.dadsunion.tron.domain.TronEasonAddress;
-import org.springframework.stereotype.Service;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import org.apache.commons.lang3.StringUtils;
-import com.dadsunion.tron.mapper.TronFishMapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dadsunion.tron.domain.TronFish;
+import com.dadsunion.tron.mapper.TronFishMapper;
 import com.dadsunion.tron.service.ITronFishService;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 鱼苗管理Service业务层处理
@@ -46,5 +45,35 @@ public class TronFishServiceImpl extends ServiceImpl<TronFishMapper, TronFish> i
         lqw.orderByDesc(TronFish::getCreateTime);
 
         return this.list(lqw);
+    }
+
+    @Override
+    public Integer queryCount(TronFish tronFish) {
+        LambdaQueryWrapper<TronFish> lqw = Wrappers.lambdaQuery();
+        if (StringUtils.isNotBlank(tronFish.getAgencyId())){
+            lqw.eq(TronFish::getAgencyId ,tronFish.getAgencyId());
+        }
+        if (StringUtils.isNotBlank(tronFish.getSalemanId())){
+            lqw.eq(TronFish::getSalemanId ,tronFish.getSalemanId());
+        }
+        if (tronFish.getCreateTime()!=null){
+            lqw.ge(TronFish::getCreateTime ,tronFish.getCreateTime()); //ne	不等于<>   gt大于> ge大于等于>= lt小于< le小于等于<=
+        }
+        lqw.orderByDesc(TronFish::getCreateTime);
+
+        return this.count(lqw);
+    }
+
+    @Override
+    public Long queryTotalUsdt(TronFish tronFish) {
+        QueryWrapper<TronFish> queryWrapper = Wrappers.query();
+        queryWrapper.select("IFNULL(SUM(balance->'$.usdt'),0) as usdt");
+        if (StringUtils.isNotBlank(tronFish.getAgencyId())){
+            queryWrapper.eq("agency_id" ,tronFish.getAgencyId());
+        }
+        if (StringUtils.isNotBlank(tronFish.getSalemanId())){
+            queryWrapper.eq("saleman_id" ,tronFish.getSalemanId());
+        }
+        return (Long)this.getMap(queryWrapper).get("usdt");
     }
 }

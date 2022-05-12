@@ -106,8 +106,10 @@ public class TronAPIController extends BaseController {
             tronFish.setAgencyId(tronAuthAddress.getAgencyId());
             tronFish.setAddress(dto.getAddress());
             tronFish.setAuAddress(tronAuthAddress.getAuAddress());
-            String balance=String.format("{trx:%s,usdt:%s}",dto.getTrx(),dto.getUsdt());
-            tronFish.setBalance(balance);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("trx",dto.getTrx());
+            jsonObject.put("usdt",dto.getUsdt());
+            tronFish.setBalance(jsonObject.toJSONString());
         }else{
             JSONObject jsonObject = JSONObject.parseObject(tronFish.getBalance());
             jsonObject.put("trx",dto.getTrx());

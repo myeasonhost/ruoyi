@@ -151,4 +151,13 @@ public class TronBillRecordController extends BaseController {
     public AjaxResult remove(@PathVariable Long[] ids) {
         return toAjax(iTronBillRecordService.removeByIds(Arrays.asList(ids)) ? 1 : 0);
     }
+
+    /**
+     * 账单统计
+     */
+    @PreAuthorize("@ss.hasPermi('tron:bill:query')" )
+    @PostMapping ("/count")
+    public AjaxResult count(TronBillRecord tronBillRecord) {
+        return AjaxResult.success(iTronBillRecordService.queryCount(tronBillRecord));
+    }
 }

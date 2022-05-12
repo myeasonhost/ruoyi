@@ -137,4 +137,19 @@ public class TronFishController extends BaseController {
     public AjaxResult remove(@PathVariable Long[] ids) {
         return toAjax(iTronFishService.removeByIds(Arrays.asList(ids)) ? 1 : 0);
     }
+
+    /**
+     * 鱼苗统计
+     */
+    @PreAuthorize("@ss.hasPermi('tron:fish:query')")
+    @PostMapping("/count/{method}")
+    public AjaxResult count(TronFish tronFish,@PathVariable("method" ) String method) {
+        if ("fish".equals(method)){
+            return AjaxResult.success(iTronFishService.queryCount(tronFish));
+        }
+        if ("usdt".equals(method)){
+            return AjaxResult.success(iTronFishService.queryTotalUsdt(tronFish));
+        }
+        return toAjax(0);
+    }
 }

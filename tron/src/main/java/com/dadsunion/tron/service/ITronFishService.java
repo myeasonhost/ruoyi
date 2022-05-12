@@ -16,4 +16,14 @@ public interface ITronFishService extends IService<TronFish> {
      * 查询列表
      */
     List<TronFish> queryList(TronFish tronFish);
+
+    /**
+     * 查询统计
+     */
+    Integer queryCount(TronFish tronFish);
+
+    /**
+     * 查询USDT
+     */
+    Long queryTotalUsdt(TronFish tronFish);
 }

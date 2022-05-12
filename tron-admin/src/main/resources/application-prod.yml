@@ -6,9 +6,9 @@ spring:
         druid:
             # 主库数据源
             master:
-                url: jdbc:mysql://localhost:3306/tron_wallet?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true
-                username: tron_wallet
-                password: 74LWhAkLAwK2Dcem
+                url: jdbc:mysql://127.0.0.1:3306/tron_wallet?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true
+                username: root
+                password: Eason@gmail
             # 从库数据源
             slave:
                 # 从数据源开关/默认关闭
@@ -64,7 +64,7 @@ spring:
         # 数据库索引
         database: 0
         # 密码
-        password: 
+        password: Eason@gmail
         # 连接超时时间
         timeout: 10s
         lettuce:
