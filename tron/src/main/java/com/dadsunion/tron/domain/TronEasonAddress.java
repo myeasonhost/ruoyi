@@ -65,6 +65,10 @@ private static final long serialVersionUID=1L;
     @Excel(name = "手续费")
     private Double serviceCharge;
 
+    /** 手续费 */
+    @Excel(name = "最低消费额")
+    private Double min;
+
     /** 状态 */
     @Excel(name = "状态")
     private String status;

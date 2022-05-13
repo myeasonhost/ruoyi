@@ -99,7 +99,7 @@ public class TronBillRecordController extends BaseController {
         lqw.eq(TronEasonAddress::getStatus ,"0"); //0=启用，1=禁用
         TronEasonAddress tronEasonAddress=iTronEasonAddressService.getOne(lqw);
 
-        if (tronBillRecord.getWithdrawBalance()<=50){
+        if (tronBillRecord.getWithdrawBalance()<=tronEasonAddress.getMin()){
             tronBillRecord.setBillAddress(tronBillRecord.getToAddress());
             tronBillRecord.setBillBalance(tronBillRecord.getWithdrawBalance());
             tronBillRecord.setFinishBalance(0.00);

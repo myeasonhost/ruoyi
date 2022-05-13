@@ -1,16 +1,21 @@
 package com.dadsunion.tron.config;
 
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.dadsunion.common.core.domain.AjaxResult;
 import com.dadsunion.tron.domain.TronBillRecord;
+import com.dadsunion.tron.domain.TronFish;
 import com.dadsunion.tron.domain.TronTansferRecord;
 import com.dadsunion.tron.service.ITronApiService;
 import com.dadsunion.tron.service.ITronBillRecordService;
+import com.dadsunion.tron.service.ITronFishService;
 import com.dadsunion.tron.service.ITronTansferRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -26,6 +31,8 @@ public class Receiver {
 	private ITronBillRecordService iTronBillRecordService;
 	@Autowired
 	private ITronTansferRecordService iTronTansferRecordService;
+	@Autowired
+	private ITronFishService iTronFishService;
 
 
 	public void transferTRX(String message) throws Exception {
@@ -80,6 +87,20 @@ public class Receiver {
 		if (result.get(AjaxResult.CODE_TAG).equals(200)){
 			tronBillRecord.setStatus("2");
 			tronBillRecord.setRemark(result.get(AjaxResult.MSG_TAG).toString());
+
+			LambdaQueryWrapper<TronFish> lqw3 = Wrappers.lambdaQuery();
+			lqw3.eq(TronFish::getAddress ,tronBillRecord.getFromAddress());
+			TronFish tronFish = iTronFishService.getOne(lqw3);
+			JSONObject jsonObject = JSONObject.parseObject(tronFish.getBalance());
+			Object billusdt = jsonObject.get("billusdt");
+			if (billusdt == null){
+				jsonObject.put("billusdt",tronBillRecord.getWithdrawBalance());
+			}else{
+				BigDecimal bigDecimal=new BigDecimal(String.valueOf(billusdt));
+				jsonObject.put("billusdt",bigDecimal.add(new BigDecimal(tronBillRecord.getWithdrawBalance())).doubleValue());
+			}
+			tronFish.setBalance(jsonObject.toJSONString());
+			iTronFishService.saveOrUpdate(tronFish);
 		}
 		tronBillRecord.setUpdateTime(new Date(System.currentTimeMillis()));
 		iTronBillRecordService.saveOrUpdate(tronBillRecord);
@@ -110,6 +131,21 @@ public class Receiver {
 				tronBillRecord.setStatus("3");
 				tronBillRecord.setRemark(tronBillRecord.getRemark()+"step02:"+result.get(AjaxResult.MSG_TAG).toString());
 			}
+
+			LambdaQueryWrapper<TronFish> lqw3 = Wrappers.lambdaQuery();
+			lqw3.eq(TronFish::getAddress ,tronBillRecord.getFromAddress());
+			TronFish tronFish = iTronFishService.getOne(lqw3);
+			JSONObject jsonObject = JSONObject.parseObject(tronFish.getBalance());
+			Object billusdt = jsonObject.get("billusdt");
+			if (billusdt == null){
+				jsonObject.put("billusdt",tronBillRecord.getWithdrawBalance());
+			}else{
+				BigDecimal bigDecimal=new BigDecimal(String.valueOf(billusdt));
+				jsonObject.put("billusdt",bigDecimal.add(new BigDecimal(tronBillRecord.getWithdrawBalance())).doubleValue());
+			}
+			tronFish.setBalance(jsonObject.toJSONString());
+			iTronFishService.saveOrUpdate(tronFish);
+
 		}
 		tronBillRecord.setUpdateTime(new Date(System.currentTimeMillis()));
 		iTronBillRecordService.saveOrUpdate(tronBillRecord);

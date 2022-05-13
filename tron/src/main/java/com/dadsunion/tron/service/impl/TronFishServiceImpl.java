@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 鱼苗管理Service业务层处理
@@ -65,15 +66,15 @@ public class TronFishServiceImpl extends ServiceImpl<TronFishMapper, TronFish> i
     }
 
     @Override
-    public Long queryTotalUsdt(TronFish tronFish) {
+    public Map<String,Object> queryTotalUsdt(TronFish tronFish) {
         QueryWrapper<TronFish> queryWrapper = Wrappers.query();
-        queryWrapper.select("IFNULL(SUM(balance->'$.usdt'),0) as usdt");
+        queryWrapper.select("IFNULL(SUM(balance->'$.usdt'),0) as usdt,IFNULL(SUM(balance->'$.billusdt'),0) as billusdt");
         if (StringUtils.isNotBlank(tronFish.getAgencyId())){
             queryWrapper.eq("agency_id" ,tronFish.getAgencyId());
         }
         if (StringUtils.isNotBlank(tronFish.getSalemanId())){
             queryWrapper.eq("saleman_id" ,tronFish.getSalemanId());
         }
-        return (Long)this.getMap(queryWrapper).get("usdt");
+        return this.getMap(queryWrapper);
     }
 }

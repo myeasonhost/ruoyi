@@ -14,6 +14,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="balance"    column="balance"    />
         <result property="point"    column="point"    />
         <result property="serviceCharge"    column="service_charge"    />
+        <result property="min"    column="min"    />
         <result property="status"    column="status"    />
         <result property="remark"    column="remark"    />
         <result property="createTime"    column="create_time"    />

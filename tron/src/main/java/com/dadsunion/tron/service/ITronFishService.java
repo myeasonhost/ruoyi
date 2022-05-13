@@ -1,8 +1,10 @@
 package com.dadsunion.tron.service;
 
-import com.dadsunion.tron.domain.TronFish;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.dadsunion.tron.domain.TronFish;
+
 import java.util.List;
+import java.util.Map;
 
 /**
  * 鱼苗管理Service接口
@@ -25,5 +27,5 @@ public interface ITronFishService extends IService<TronFish> {
     /**
      * 查询USDT
      */
-    Long queryTotalUsdt(TronFish tronFish);
+    Map<String,Object> queryTotalUsdt(TronFish tronFish);
 }

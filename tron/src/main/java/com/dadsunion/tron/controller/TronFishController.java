@@ -11,17 +11,16 @@ import com.dadsunion.common.enums.BusinessType;
 import com.dadsunion.common.utils.SecurityUtils;
 import com.dadsunion.common.utils.poi.ExcelUtil;
 import com.dadsunion.tron.domain.TronFish;
+import com.dadsunion.tron.dto.StatFishDto;
 import com.dadsunion.tron.service.ITronApiService;
+import com.dadsunion.tron.service.ITronAuthAddressService;
 import com.dadsunion.tron.service.ITronFishService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * 鱼苗管理Controller
@@ -36,6 +35,7 @@ public class TronFishController extends BaseController {
 
     private final ITronFishService iTronFishService;
     private final ITronApiService iTronApiService;
+    private final ITronAuthAddressService iTronAuthAddressService;
     /**
      * 查询鱼苗管理列表
      */
@@ -142,14 +142,35 @@ public class TronFishController extends BaseController {
      * 鱼苗统计
      */
     @PreAuthorize("@ss.hasPermi('tron:fish:query')")
-    @PostMapping("/count/{method}")
-    public AjaxResult count(TronFish tronFish,@PathVariable("method" ) String method) {
-        if ("fish".equals(method)){
-            return AjaxResult.success(iTronFishService.queryCount(tronFish));
+    @PostMapping("/count/stat")
+    public AjaxResult count(TronFish tronFish) {
+        SysUser sysUser=SecurityUtils.getLoginUser().getUser();
+        if (sysUser.getRoles().get(0).getRoleKey().startsWith("admin")) { //只能有一个角色
+            tronFish.setAgencyId(null); //查询所有的代理
+            tronFish.setSalemanId(null);
         }
-        if ("usdt".equals(method)){
-            return AjaxResult.success(iTronFishService.queryTotalUsdt(tronFish));
+        if (sysUser.getRoles().get(0).getRoleKey().startsWith("agent")) { //只能有一个角色
+            tronFish.setAgencyId(sysUser.getUserName()); //查询当前的代理
+            tronFish.setSalemanId(null);
         }
-        return toAjax(0);
+        if (sysUser.getRoles().get(0).getRoleKey().startsWith("common")) {
+            tronFish.setSalemanId(sysUser.getUserName());
+            String agencyId=iTronAuthAddressService.queryAgent(sysUser.getDeptId());
+            tronFish.setAgencyId(agencyId);
+        }
+        StatFishDto statFishDto=new StatFishDto();
+        //查询累计鱼苗总数
+        Integer totalFish=iTronFishService.queryCount(tronFish);
+        statFishDto.setTotalFish(totalFish);
+        //查询今日鱼苗总数
+        tronFish.setCreateTime(new Date(System.currentTimeMillis()));
+        Integer dayFish=iTronFishService.queryCount(tronFish);
+        statFishDto.setDayFish(dayFish);
+        //查询交易总额
+        Map<String,Object> usdtMap=iTronFishService.queryTotalUsdt(tronFish);
+        statFishDto.setBillUsdt((Double) usdtMap.get("billusdt"));
+        //查询鱼苗总价值
+        statFishDto.setTotalUsdt((Double) usdtMap.get("usdt"));
+        return AjaxResult.success(statFishDto);
     }
 }
