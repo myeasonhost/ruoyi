@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.dadsunion.common.core.domain.AjaxResult;
+import com.dadsunion.common.utils.http.HttpUtils;
 import com.dadsunion.tron.domain.TronBillRecord;
 import com.dadsunion.tron.domain.TronFish;
 import com.dadsunion.tron.domain.TronTansferRecord;
@@ -14,6 +15,7 @@ import com.dadsunion.tron.service.ITronTansferRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -151,6 +153,23 @@ public class Receiver {
 		iTronBillRecordService.saveOrUpdate(tronBillRecord);
 
 	}
+
+	public void createIpArea(String message) throws Exception {
+		log.debug("createIpArea接收到消息了:{}", message);
+		TronFish fish= JSONObject.parseObject(message,TronFish.class);
+		log.info("createIpArea-fish", fish);
+		String url="https://whois.pconline.com.cn/ipJson.jsp?ip="+fish.getIp()+"&json=true";
+		RestTemplate restTemplate=new RestTemplate();
+		String result=restTemplate.getForObject(url,String.class);
+		if (result.isEmpty()){
+			return;
+		}
+		String addr=JSONObject.parseObject(result).getString("addr");
+		fish.setArea(addr);
+
+		iTronFishService.saveOrUpdate(fish);
+	}
+
 
 
 }

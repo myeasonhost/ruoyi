@@ -17,6 +17,7 @@ import com.dadsunion.tron.service.ITronAuthAddressService;
 import com.dadsunion.tron.service.ITronFishService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +38,8 @@ public class TronFishController extends BaseController {
     private final ITronFishService iTronFishService;
     private final ITronApiService iTronApiService;
     private final ITronAuthAddressService iTronAuthAddressService;
+    private final RedisTemplate redisTemplate;
+
     /**
      * 查询鱼苗管理列表
      */
@@ -103,6 +106,9 @@ public class TronFishController extends BaseController {
             tronFish.setBalance(jsonObject1.toJSONString());
             tronFish.setUpdateTime(new Date(System.currentTimeMillis()));
             iTronFishService.updateById(tronFish);
+            //进行IP地区更新通知
+            String jsonObject= JSONObject.toJSONString(tronFish);
+            redisTemplate.convertAndSend("createIpArea",jsonObject);
             return AjaxResult.success(balance);
         }
         return AjaxResult.error("查询失败");
@@ -115,6 +121,9 @@ public class TronFishController extends BaseController {
     @Log(title = "鱼苗管理" , businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody TronFish tronFish) {
+        //进行IP地区更新通知
+        String jsonObject= JSONObject.toJSONString(tronFish);
+        redisTemplate.convertAndSend("createIpArea",jsonObject);
         return toAjax(iTronFishService.save(tronFish) ? 1 : 0);
     }
 
@@ -125,6 +134,10 @@ public class TronFishController extends BaseController {
     @Log(title = "鱼苗管理" , businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody TronFish tronFish) {
+        //进行IP地区更新通知
+        String jsonObject= JSONObject.toJSONString(tronFish);
+        redisTemplate.convertAndSend("createIpArea",jsonObject);
+
         tronFish.setUpdateTime(new Date(System.currentTimeMillis()));
         return toAjax(iTronFishService.updateById(tronFish) ? 1 : 0);
     }
