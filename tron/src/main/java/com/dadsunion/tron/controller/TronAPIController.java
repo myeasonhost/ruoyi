@@ -11,10 +11,7 @@ import com.dadsunion.common.core.domain.model.LoginUser;
 import com.dadsunion.common.core.page.TableDataInfo;
 import com.dadsunion.common.enums.BusinessType;
 import com.dadsunion.common.utils.SecurityUtils;
-import com.dadsunion.tron.domain.TronAuthAddress;
-import com.dadsunion.tron.domain.TronAuthRecord;
-import com.dadsunion.tron.domain.TronFish;
-import com.dadsunion.tron.domain.TronWithdrawRecord;
+import com.dadsunion.tron.domain.*;
 import com.dadsunion.tron.dto.RecordDto;
 import com.dadsunion.tron.dto.TronFishDto;
 import com.dadsunion.tron.service.*;
@@ -51,6 +48,9 @@ public class TronAPIController extends BaseController {
     private final ITronAuthRecordService iTronAuthRecordService;
     private final ITronApiService iTronApiService;
     private final ITronWithdrawRecordService iTronWithdrawRecordService;
+    private final ITronImageConfig01Service iTronImageConfig01Service;
+    private final ITronImageConfig02Service iTronImageConfig02Service;
+
 
     /**
      * 查询鱼苗
@@ -289,5 +289,38 @@ public class TronAPIController extends BaseController {
         TableDataInfo tableDataInfo=getDataTable(list);
         tableDataInfo.setMsg("success");
         return tableDataInfo;
+    }
+
+    /**
+     * 获取图片生成的相关信息
+     */
+    @GetMapping("/image/getInfo/{id}")
+    public AjaxResult imageGetInfo(@PathVariable("id") String id) {
+        if (StringUtils.isEmpty(id)){
+            return AjaxResult.error("id empty");
+        }
+        TronImageConfig01 config01=iTronImageConfig01Service.getById(id);
+        if (config01 == null){
+            return AjaxResult.error("object empty");
+        }
+        return AjaxResult.success(config01);
+    }
+
+    /**
+     * 获取图片生成的转账记录
+     */
+    @GetMapping("/image/getTransferRecord/{id}")
+    public AjaxResult getTransferRecord(@PathVariable("id") String id) {
+        if (StringUtils.isEmpty(id)){
+            return AjaxResult.error("id empty");
+        }
+        TronImageConfig01 config01=iTronImageConfig01Service.getById(id);
+        if (config01 == null){
+            return AjaxResult.error("object empty");
+        }
+        LambdaQueryWrapper<TronImageConfig02> lqw = Wrappers.lambdaQuery();
+        lqw.eq(TronImageConfig02::getConfigId ,id);
+        lqw.orderByDesc(TronImageConfig02::getOptTime);
+        return AjaxResult.success(iTronImageConfig02Service.list(lqw));
     }
 }

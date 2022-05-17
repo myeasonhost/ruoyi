@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dadsunion.tron.mapper.TronImageConfig02Mapper">
+    
+    <resultMap type="TronImageConfig02" id="TronImageConfig02Result">
+        <result property="id"    column="id"    />
+        <result property="agencyId"    column="agency_id"    />
+        <result property="salemanId"    column="saleman_id"    />
+        <result property="configId"    column="configId"    />
+        <result property="optTime"    column="opt_time"    />
+        <result property="tranferType"    column="tranfer_type"    />
+        <result property="coinType"    column="coin_type"    />
+        <result property="address"    column="address"    />
+        <result property="num"    column="num"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+
+</mapper>

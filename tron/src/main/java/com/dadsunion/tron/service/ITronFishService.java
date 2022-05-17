@@ -3,6 +3,7 @@ package com.dadsunion.tron.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.dadsunion.tron.domain.TronFish;
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +23,7 @@ public interface ITronFishService extends IService<TronFish> {
     /**
      * 查询统计
      */
-    Integer queryCount(TronFish tronFish);
+    Integer queryCount(TronFish tronFish) throws ParseException;
 
     /**
      * 查询USDT

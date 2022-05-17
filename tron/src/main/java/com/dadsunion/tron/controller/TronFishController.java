@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -143,7 +144,7 @@ public class TronFishController extends BaseController {
      */
     @PreAuthorize("@ss.hasPermi('tron:fish:query')")
     @PostMapping("/count/stat")
-    public AjaxResult count(TronFish tronFish) {
+    public AjaxResult count(TronFish tronFish) throws ParseException {
         SysUser sysUser=SecurityUtils.getLoginUser().getUser();
         if (sysUser.getRoles().get(0).getRoleKey().startsWith("admin")) { //只能有一个角色
             tronFish.setAgencyId(null); //查询所有的代理

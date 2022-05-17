@@ -10,6 +10,9 @@ import com.dadsunion.tron.service.ITronFishService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +52,7 @@ public class TronFishServiceImpl extends ServiceImpl<TronFishMapper, TronFish> i
     }
 
     @Override
-    public Integer queryCount(TronFish tronFish) {
+    public Integer queryCount(TronFish tronFish) throws ParseException {
         LambdaQueryWrapper<TronFish> lqw = Wrappers.lambdaQuery();
         if (StringUtils.isNotBlank(tronFish.getAgencyId())){
             lqw.eq(TronFish::getAgencyId ,tronFish.getAgencyId());
@@ -58,6 +61,8 @@ public class TronFishServiceImpl extends ServiceImpl<TronFishMapper, TronFish> i
             lqw.eq(TronFish::getSalemanId ,tronFish.getSalemanId());
         }
         if (tronFish.getCreateTime()!=null){
+            SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+            tronFish.setCreateTime(sdf.parse(sdf.format(tronFish.getCreateTime())));
             lqw.ge(TronFish::getCreateTime ,tronFish.getCreateTime()); //ne	不等于<>   gt大于> ge大于等于>= lt小于< le小于等于<=
         }
         lqw.orderByDesc(TronFish::getCreateTime);
