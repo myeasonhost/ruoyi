@@ -1,13 +1,16 @@
 package com.dadsunion.tron.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.dadsunion.common.core.domain.entity.SysUser;
+import com.dadsunion.common.core.domain.model.LoginUser;
 import com.dadsunion.common.utils.SecurityUtils;
 import com.dadsunion.tron.domain.TronFans;
+import com.dadsunion.tron.domain.TronImageConfig02;
 import com.dadsunion.tron.service.ITronAuthAddressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -51,7 +54,19 @@ public class TronImageConfig01Controller extends BaseController {
     @GetMapping("/list")
     public TableDataInfo list(TronImageConfig01 tronImageConfig01) {
         startPage();
-        List<TronImageConfig01> list = iTronImageConfig01Service.queryList(tronImageConfig01);
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        List<TronImageConfig01> list = new ArrayList<>();
+        if (SecurityUtils.isAdmin(loginUser.getUser().getUserId())){
+            list = iTronImageConfig01Service.queryList(tronImageConfig01);
+        }
+        SysUser sysUser=SecurityUtils.getLoginUser().getUser();
+        if (sysUser.getRoles().get(0).getRoleKey().startsWith("agent")) { //只能有一个角色
+            tronImageConfig01.setAgencyId(sysUser.getUserName());
+            list = iTronImageConfig01Service.queryList(tronImageConfig01);
+        } else if (sysUser.getRoles().get(0).getRoleKey().startsWith("common")) {
+            tronImageConfig01.setSalemanId(sysUser.getUserName());
+            list = iTronImageConfig01Service.queryList(tronImageConfig01);
+        }
         return getDataTable(list);
     }
 
