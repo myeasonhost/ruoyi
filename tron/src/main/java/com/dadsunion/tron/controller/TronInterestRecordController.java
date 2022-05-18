@@ -106,7 +106,7 @@ public class TronInterestRecordController extends BaseController {
         tronInterestRecord.setSalemanId(tronFish.getSalemanId());
         tronInterestRecord.setAddress(tronFish.getAddress());
         tronInterestRecord.setCurrentBalance(usdt.doubleValue());
-        double f1 = usdt.multiply(new BigDecimal(0.03)).doubleValue();
+        double f1 = tronInterestRecord.getCurrentInterest().doubleValue();
         tronInterestRecord.setCurrentInterest(f1);
         tronInterestRecord.setChangeBalance(usdt.add(new BigDecimal(f1)).doubleValue());
         tronInterestRecord.setStatus("1");

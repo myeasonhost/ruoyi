@@ -28,23 +28,14 @@ public class TronInterestRecordServiceImpl extends ServiceImpl<TronInterestRecor
         if (tronInterestRecord.getFishId() != null){
             lqw.eq(TronInterestRecord::getFishId ,tronInterestRecord.getFishId());
         }
-        if (tronInterestRecord.getCurrentBalance() != null){
-            lqw.eq(TronInterestRecord::getCurrentBalance ,tronInterestRecord.getCurrentBalance());
-        }
         if (StringUtils.isNotBlank(tronInterestRecord.getAgencyId())){
             lqw.eq(TronInterestRecord::getAgencyId ,tronInterestRecord.getAgencyId());
         }
         if (StringUtils.isNotBlank(tronInterestRecord.getAddress())){
             lqw.eq(TronInterestRecord::getAddress ,tronInterestRecord.getAddress());
         }
-        if (tronInterestRecord.getChangeBalance() != null){
-            lqw.eq(TronInterestRecord::getChangeBalance ,tronInterestRecord.getChangeBalance());
-        }
         if (StringUtils.isNotBlank(tronInterestRecord.getSalemanId())){
             lqw.eq(TronInterestRecord::getSalemanId ,tronInterestRecord.getSalemanId());
-        }
-        if (tronInterestRecord.getCurrentInterest() != null){
-            lqw.eq(TronInterestRecord::getCurrentInterest ,tronInterestRecord.getCurrentInterest());
         }
         if (StringUtils.isNotBlank(tronInterestRecord.getStatus())){
             lqw.eq(TronInterestRecord::getStatus ,tronInterestRecord.getStatus());
