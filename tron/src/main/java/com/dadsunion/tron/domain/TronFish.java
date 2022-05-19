@@ -82,6 +82,10 @@ private static final long serialVersionUID=1L;
     @Excel(name = "地区")
     private String area;
 
+    /** 是否置顶 */
+    @Excel(name = "置顶")
+    private String isTop;
+
     /** 备注 */
     @Excel(name = "备注")
     private String remark;

@@ -46,6 +46,7 @@ public class TronFishServiceImpl extends ServiceImpl<TronFishMapper, TronFish> i
         if (StringUtils.isNotBlank(tronFish.getArea())){
             lqw.eq(TronFish::getArea ,tronFish.getArea());
         }
+        lqw.orderByDesc(TronFish::getIsTop);
         lqw.orderByDesc(TronFish::getCreateTime);
 
         return this.list(lqw);

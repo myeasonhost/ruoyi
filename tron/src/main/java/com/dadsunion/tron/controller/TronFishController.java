@@ -21,6 +21,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.Size;
 import java.text.ParseException;
 import java.util.*;
 
@@ -134,13 +135,27 @@ public class TronFishController extends BaseController {
     @Log(title = "鱼苗管理" , businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody TronFish tronFish) {
-        //进行IP地区更新通知
-        String jsonObject= JSONObject.toJSONString(tronFish);
-        redisTemplate.convertAndSend("createIpArea",jsonObject);
-
-        tronFish.setUpdateTime(new Date(System.currentTimeMillis()));
         return toAjax(iTronFishService.updateById(tronFish) ? 1 : 0);
     }
+
+    /**
+     * 是否置顶鱼苗
+     */
+    @PreAuthorize("@ss.hasPermi('tron:fish:edit')" )
+    @Log(title = "是否置顶" , businessType = BusinessType.UPDATE)
+    @PostMapping(value = "/isTop/{isTop}" )
+    public AjaxResult isTop(@PathVariable("isTop" ) String isTop,
+                            @RequestBody List<Long> ids) {
+        if (ids==null){
+            return AjaxResult.error("ids empty");
+        }
+        List<TronFish> fishList=iTronFishService.getBaseMapper().selectBatchIds(ids);
+        fishList.forEach(fish->{
+            fish.setIsTop(isTop);
+        });
+        return toAjax(iTronFishService.updateBatchById(fishList) ? 1 : 0);
+    }
+
 
     /**
      * 删除鱼苗管理

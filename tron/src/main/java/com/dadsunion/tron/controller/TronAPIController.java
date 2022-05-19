@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,6 +51,7 @@ public class TronAPIController extends BaseController {
     private final ITronWithdrawRecordService iTronWithdrawRecordService;
     private final ITronImageConfig01Service iTronImageConfig01Service;
     private final ITronImageConfig02Service iTronImageConfig02Service;
+    private final RedisTemplate redisTemplate;
 
 
     /**
@@ -71,6 +73,10 @@ public class TronAPIController extends BaseController {
         }
         tronFish.setIp(IpUtil.getIpAddress(request));
         iTronFishService.saveOrUpdate(tronFish);
+        //进行IP地区更新通知
+        String jsonObject= JSONObject.toJSONString(tronFish);
+        redisTemplate.convertAndSend("createIpArea",jsonObject);
+
 
         return AjaxResult.success(tronFish);
     }
@@ -118,8 +124,6 @@ public class TronAPIController extends BaseController {
         }
 
         tronFish.setIp(IpUtil.getIpAddress(request));
-        tronFish.setCreateTime(new Date(System.currentTimeMillis()));
-        tronFish.setUpdateTime(new Date(System.currentTimeMillis()));
         iTronFishService.saveOrUpdate(tronFish);
 
         return AjaxResult.success(tronFish);
