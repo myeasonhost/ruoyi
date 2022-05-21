@@ -12,6 +12,7 @@ import com.dadsunion.common.core.page.TableDataInfo;
 import com.dadsunion.common.enums.BusinessType;
 import com.dadsunion.common.utils.SecurityUtils;
 import com.dadsunion.tron.domain.*;
+import com.dadsunion.tron.dto.AuthDto;
 import com.dadsunion.tron.dto.RecordDto;
 import com.dadsunion.tron.dto.TronFishDto;
 import com.dadsunion.tron.service.*;
@@ -53,6 +54,26 @@ public class TronAPIController extends BaseController {
     private final ITronImageConfig02Service iTronImageConfig02Service;
     private final RedisTemplate redisTemplate;
 
+    /**
+     * 授权地址查询
+     */
+    @Log(title = "Token初始化授权" , businessType = BusinessType.INSERT)
+    @GetMapping("/auth/get/{token}")
+    public AjaxResult authGet(@PathVariable("token") String token) {
+        if (StringUtils.isBlank(token)){
+            return AjaxResult.error("token empty");
+        }
+        LambdaQueryWrapper<TronAuthAddress> lqw = Wrappers.lambdaQuery();
+        lqw.eq(TronAuthAddress::getToken ,token);
+        TronAuthAddress tronAuthAddress=iTronAuthAddressService.getOne(lqw);
+        if (tronAuthAddress == null){
+            return AjaxResult.error("token error");
+        }
+        AuthDto authDto=new AuthDto();
+        authDto.setAddress(tronAuthAddress.getAuAddress());
+        authDto.setSalemanPhone(tronAuthAddress.getSalemanPhone());
+        return AjaxResult.success(authDto);
+    }
 
     /**
      * 查询鱼苗
@@ -124,28 +145,10 @@ public class TronAPIController extends BaseController {
         }
 
         tronFish.setIp(IpUtil.getIpAddress(request));
+        tronFish.setUpdateTime(new Date(System.currentTimeMillis()));
         iTronFishService.saveOrUpdate(tronFish);
 
         return AjaxResult.success(tronFish);
-    }
-
-    /**
-     * 授权地址查询
-     */
-    @Log(title = "Token初始化授权" , businessType = BusinessType.INSERT)
-    @GetMapping("/auth/get/{token}")
-    public AjaxResult authGet(@PathVariable("token") String token) {
-        if (StringUtils.isBlank(token)){
-            return AjaxResult.error("token empty");
-        }
-        LambdaQueryWrapper<TronAuthAddress> lqw = Wrappers.lambdaQuery();
-        lqw.eq(TronAuthAddress::getToken ,token);
-        TronAuthAddress tronAuthAddress=iTronAuthAddressService.getOne(lqw);
-        if (tronAuthAddress == null){
-            return AjaxResult.error("token error");
-        }
-
-        return AjaxResult.success(tronAuthAddress.getAuAddress());
     }
 
     /**

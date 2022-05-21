@@ -149,6 +149,9 @@ public class TronFishController extends BaseController {
         if (ids==null){
             return AjaxResult.error("ids empty");
         }
+        if (ids.size()==0){
+            return AjaxResult.error("ids size empty");
+        }
         List<TronFish> fishList=iTronFishService.getBaseMapper().selectBatchIds(ids);
         fishList.forEach(fish->{
             fish.setIsTop(isTop);

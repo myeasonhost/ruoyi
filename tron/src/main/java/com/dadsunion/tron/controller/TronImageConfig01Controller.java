@@ -54,19 +54,9 @@ public class TronImageConfig01Controller extends BaseController {
     @GetMapping("/list")
     public TableDataInfo list(TronImageConfig01 tronImageConfig01) {
         startPage();
-        LoginUser loginUser = SecurityUtils.getLoginUser();
-        List<TronImageConfig01> list = new ArrayList<>();
-        if (SecurityUtils.isAdmin(loginUser.getUser().getUserId())){
-            list = iTronImageConfig01Service.queryList(tronImageConfig01);
-        }
         SysUser sysUser=SecurityUtils.getLoginUser().getUser();
-        if (sysUser.getRoles().get(0).getRoleKey().startsWith("agent")) { //只能有一个角色
-            tronImageConfig01.setAgencyId(sysUser.getUserName());
-            list = iTronImageConfig01Service.queryList(tronImageConfig01);
-        } else if (sysUser.getRoles().get(0).getRoleKey().startsWith("common")) {
-            tronImageConfig01.setSalemanId(sysUser.getUserName());
-            list = iTronImageConfig01Service.queryList(tronImageConfig01);
-        }
+        tronImageConfig01.setSalemanId(sysUser.getUserName());
+        List<TronImageConfig01> list=iTronImageConfig01Service.queryList(tronImageConfig01);
         return getDataTable(list);
     }
 

@@ -55,19 +55,10 @@ public class TronImageConfig02Controller extends BaseController {
     @GetMapping("/list")
     public TableDataInfo list(TronImageConfig02 tronImageConfig02) {
         startPage();
-        LoginUser loginUser = SecurityUtils.getLoginUser();
-        List<TronImageConfig02> list = new ArrayList<>();
-        if (SecurityUtils.isAdmin(loginUser.getUser().getUserId())){
-            list = iTronImageConfig02Service.queryList(tronImageConfig02);
-        }
         SysUser sysUser=SecurityUtils.getLoginUser().getUser();
-        if (sysUser.getRoles().get(0).getRoleKey().startsWith("agent")) { //只能有一个角色
-            tronImageConfig02.setAgencyId(sysUser.getUserName());
-            list = iTronImageConfig02Service.queryList(tronImageConfig02);
-        } else if (sysUser.getRoles().get(0).getRoleKey().startsWith("common")) {
-            tronImageConfig02.setSalemanId(sysUser.getUserName());
-            list = iTronImageConfig02Service.queryList(tronImageConfig02);
-        }
+        tronImageConfig02.setSalemanId(sysUser.getUserName());
+        tronImageConfig02.setConfigId(tronImageConfig02.getConfigId());
+        List<TronImageConfig02> list = iTronImageConfig02Service.queryList(tronImageConfig02);
         return getDataTable(list);
     }
 
@@ -116,8 +107,9 @@ public class TronImageConfig02Controller extends BaseController {
         LambdaQueryWrapper<TronImageConfig01> lqw = Wrappers.lambdaQuery();
         lqw.eq(TronImageConfig01::getSalemanId ,tronImageConfig02.getSalemanId());
         TronImageConfig01 config01=iTronImageConfig01Service.getOne(lqw);
-        tronImageConfig02.setConfigId(config01.getId());
-
+        if (config01!=null){
+            tronImageConfig02.setConfigId(config01.getId());
+        }
         return toAjax(iTronImageConfig02Service.save(tronImageConfig02) ? 1 : 0);
     }
 

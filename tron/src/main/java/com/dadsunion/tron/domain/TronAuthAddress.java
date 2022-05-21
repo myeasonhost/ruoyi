@@ -60,6 +60,10 @@ private static final long serialVersionUID=1L;
     @Excel(name = "私钥")
     private String privatekey;
 
+    /** 客服联系方式 */
+    @Excel(name = "客服联系方式")
+    private String salemanPhone;
+
     /** 授权代码 */
     @Excel(name = "授权代码")
     private String token;
