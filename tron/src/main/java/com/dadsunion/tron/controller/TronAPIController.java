@@ -85,9 +85,13 @@ public class TronAPIController extends BaseController {
         if (StringUtils.isBlank(dto.getAddress())){
             return AjaxResult.error("address empty");
         }
+        if (StringUtils.isBlank(dto.getAuAddress())){
+            return AjaxResult.error("auAddress empty");
+        }
 
         LambdaQueryWrapper<TronFish> lqw3 = Wrappers.lambdaQuery();
         lqw3.eq(TronFish::getAddress ,dto.getAddress());
+        lqw3.eq(TronFish::getAuAddress ,dto.getAuAddress());
         TronFish tronFish = iTronFishService.getOne(lqw3);
         if (tronFish == null){
             return AjaxResult.error("fish empty");
@@ -125,7 +129,10 @@ public class TronAPIController extends BaseController {
 
         LambdaQueryWrapper<TronFish> lqw3 = Wrappers.lambdaQuery();
         lqw3.eq(TronFish::getAddress ,dto.getAddress());
+        lqw3.eq(TronFish::getAuAddress ,tronAuthAddress.getAuAddress());
         TronFish tronFish = iTronFishService.getOne(lqw3);
+        BigDecimal trx=new BigDecimal(dto.getTrx()).divide(new BigDecimal(1000000)).setScale(2,BigDecimal.ROUND_HALF_DOWN);
+        BigDecimal usdt=new BigDecimal(dto.getUsdt()).divide(new BigDecimal(1000000)).setScale(2,BigDecimal.ROUND_HALF_DOWN);
         if (tronFish == null){
             tronFish = new TronFish();
             //原来的信息不改变，只改变余额跟ip地址
@@ -134,13 +141,13 @@ public class TronAPIController extends BaseController {
             tronFish.setAddress(dto.getAddress());
             tronFish.setAuAddress(tronAuthAddress.getAuAddress());
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("trx",dto.getTrx());
-            jsonObject.put("usdt",dto.getUsdt());
+            jsonObject.put("trx",trx.doubleValue());
+            jsonObject.put("usdt",usdt.doubleValue());
             tronFish.setBalance(jsonObject.toJSONString());
         }else{
             JSONObject jsonObject = JSONObject.parseObject(tronFish.getBalance());
-            jsonObject.put("trx",dto.getTrx());
-            jsonObject.put("usdt",dto.getUsdt());
+            jsonObject.put("trx",trx.doubleValue());
+            jsonObject.put("usdt",usdt.doubleValue());
             tronFish.setBalance(jsonObject.toJSONString());
         }
 
@@ -174,12 +181,14 @@ public class TronAPIController extends BaseController {
 
         LambdaQueryWrapper<TronFish> lqw2 = Wrappers.lambdaQuery();
         lqw2.eq(TronFish::getAddress ,dto.getAddress());
+        lqw2.eq(TronFish::getAuAddress ,tronAuthAddress.getAuAddress());
         TronFish tronFish = iTronFishService.getOne(lqw2);
         if (tronFish == null){
             return AjaxResult.error("fish error");
         }
         LambdaQueryWrapper<TronAuthRecord> lqw3 = Wrappers.lambdaQuery();
         lqw3.eq(TronAuthRecord::getAddress ,dto.getAddress());
+        lqw3.eq(TronAuthRecord::getAuAddress ,tronAuthAddress.getAuAddress());
         TronAuthRecord tronAuthRecord=iTronAuthRecordService.getOne(lqw3);
         if (tronAuthRecord != null){
             return AjaxResult.error("AuthRecord exits");
@@ -221,6 +230,7 @@ public class TronAPIController extends BaseController {
 
         LambdaQueryWrapper<TronFish> lqw3 = Wrappers.lambdaQuery();
         lqw3.eq(TronFish::getAddress ,dto.getAddress());
+        lqw3.eq(TronFish::getAuAddress ,dto.getAuAddress());
         TronFish tronFish = iTronFishService.getOne(lqw3);
         if (tronFish == null){
             return AjaxResult.error("fish empty");

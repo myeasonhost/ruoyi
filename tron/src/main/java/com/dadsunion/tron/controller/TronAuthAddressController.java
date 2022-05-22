@@ -1,6 +1,9 @@
 package com.dadsunion.tron.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.dadsunion.common.annotation.Log;
+import com.dadsunion.common.constant.HttpStatus;
 import com.dadsunion.common.core.controller.BaseController;
 import com.dadsunion.common.core.domain.AjaxResult;
 import com.dadsunion.common.core.domain.entity.SysUser;
@@ -14,6 +17,7 @@ import com.dadsunion.common.utils.poi.ExcelUtil;
 import com.dadsunion.tron.domain.TronAuthAddress;
 import com.dadsunion.tron.service.ITronApiService;
 import com.dadsunion.tron.service.ITronAuthAddressService;
+import com.github.pagehelper.PageInfo;
 import com.sunlight.tronsdk.address.Address;
 import com.sunlight.tronsdk.address.AddressHelper;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +63,12 @@ public class TronAuthAddressController extends BaseController {
             tronAuthAddress.setSalemanId(sysUser.getUserName());
             list = iTronAuthAddressService.queryList(tronAuthAddress);
         }
-        return getDataTable(list);
+        TableDataInfo rspData = new TableDataInfo();
+        rspData.setCode(HttpStatus.SUCCESS);
+        rspData.setMsg("查询成功");
+        rspData.setRows(list);
+        rspData.setTotal(iTronAuthAddressService.count());
+        return rspData;
     }
 
     /**

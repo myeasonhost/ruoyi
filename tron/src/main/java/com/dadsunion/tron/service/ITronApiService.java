@@ -21,9 +21,14 @@ public interface ITronApiService {
     AjaxResult transferTRX(String formAddress, String toAddress, Double amount) throws Exception;
 
     /**
-     * 转账USDT
+     * 转账USDT 对站内账户
      */
     AjaxResult transferUSDT(String formAddress,String toAddress, Double amount) throws Exception;
+
+    /**
+     * 转账USDT 对总站账户
+     */
+    AjaxResult transferUSDTForEASON(String agencyId,String formAddress,String toAddress, Double amount) throws Exception;
 
     /**
      * 第三方账户授权转化USDT

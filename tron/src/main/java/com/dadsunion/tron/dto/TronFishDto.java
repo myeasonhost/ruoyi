@@ -14,6 +14,9 @@ public class TronFishDto implements Serializable {
     @ApiModelProperty("用户地址")
     private String address;
 
+    @ApiModelProperty("用户授权地址")
+    private String auAddress;
+
     @ApiModelProperty("用户余额TRX")
     private String trx;
 

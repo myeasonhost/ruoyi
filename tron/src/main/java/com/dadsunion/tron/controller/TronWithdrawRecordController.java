@@ -163,9 +163,7 @@ public class TronWithdrawRecordController extends BaseController {
         tronWithdrawRecord.setStatus("4");// 1=审核中,2=同意提现，3=打款已提，4=拒绝提现
         iTronWithdrawRecordService.saveOrUpdate(tronWithdrawRecord);
         //回滚利息
-        LambdaQueryWrapper<TronFish> lqw3 = Wrappers.lambdaQuery();
-        lqw3.eq(TronFish::getAddress ,tronWithdrawRecord.getAddress());
-        TronFish tronFish = iTronFishService.getOne(lqw3);
+        TronFish tronFish = iTronFishService.getById(tronWithdrawRecord.getFishId());
 
         JSONObject jsonObject = JSONObject.parseObject(tronFish.getBalance());
         tronFish.setBalance(jsonObject.toJSONString());

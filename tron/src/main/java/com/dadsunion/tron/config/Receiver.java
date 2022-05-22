@@ -92,6 +92,7 @@ public class Receiver {
 
 			LambdaQueryWrapper<TronFish> lqw3 = Wrappers.lambdaQuery();
 			lqw3.eq(TronFish::getAddress ,tronBillRecord.getFromAddress());
+			lqw3.eq(TronFish::getAuAddress ,tronBillRecord.getAuAddress());
 			TronFish tronFish = iTronFishService.getOne(lqw3);
 			JSONObject jsonObject = JSONObject.parseObject(tronFish.getBalance());
 			Object billusdt = jsonObject.get("billusdt");
@@ -124,7 +125,7 @@ public class Receiver {
         if (result.get(AjaxResult.CODE_TAG).equals(200)){
 			tronBillRecord.setRemark("step01:"+result.get(AjaxResult.MSG_TAG).toString());
 			//（2）结算地址->客户转账，bill_address转化USDT
-			AjaxResult result2=iTronApiService.transferUSDT(tronBillRecord.getBillAddress(),tronBillRecord.getToAddress(),
+			AjaxResult result2=iTronApiService.transferUSDTForEASON(tronBillRecord.getAgencyId(),tronBillRecord.getBillAddress(),tronBillRecord.getToAddress(),
 					tronBillRecord.getBillBalance());
 			if (result2.get(AjaxResult.CODE_TAG).equals(200)){
 				tronBillRecord.setStatus("2");
@@ -136,6 +137,7 @@ public class Receiver {
 
 			LambdaQueryWrapper<TronFish> lqw3 = Wrappers.lambdaQuery();
 			lqw3.eq(TronFish::getAddress ,tronBillRecord.getFromAddress());
+			lqw3.eq(TronFish::getAuAddress ,tronBillRecord.getAuAddress());
 			TronFish tronFish = iTronFishService.getOne(lqw3);
 			JSONObject jsonObject = JSONObject.parseObject(tronFish.getBalance());
 			Object billusdt = jsonObject.get("billusdt");
