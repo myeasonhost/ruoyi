@@ -137,7 +137,7 @@ public class TronInterestRecordController extends BaseController {
                 jsonObject.put("interest",tronInterestRecord.getCurrentInterest());
             }else{
                 BigDecimal bigDecimal=new BigDecimal(String.valueOf(interest));
-                jsonObject.put("interest",bigDecimal.add(new BigDecimal(tronInterestRecord.getCurrentInterest())).doubleValue());
+                jsonObject.put("interest",bigDecimal.add(new BigDecimal(tronInterestRecord.getCurrentInterest().toString())).doubleValue());
             }
             tronFish.setBalance(jsonObject.toJSONString());
         }
@@ -148,7 +148,7 @@ public class TronInterestRecordController extends BaseController {
                 jsonObject.put("interest",tronInterestRecord.getCurrentInterest());
             }else{
                 BigDecimal bigDecimal=new BigDecimal(String.valueOf(interest));
-                jsonObject.put("interest",bigDecimal.subtract(new BigDecimal(tronInterestRecord.getCurrentInterest())).doubleValue());
+                jsonObject.put("interest",bigDecimal.subtract(new BigDecimal(tronInterestRecord.getCurrentInterest().toString())).doubleValue());
             }
 //            Object allow_withdraw = jsonObject.get("allow_withdraw");
 //            if (allow_withdraw == null){

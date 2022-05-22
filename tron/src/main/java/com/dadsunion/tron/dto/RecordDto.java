@@ -14,4 +14,7 @@ public class RecordDto implements Serializable {
     @ApiModelProperty("用户地址")
     private String quantity;
 
+    @ApiModelProperty("状态")
+    private String status;
+
 }

@@ -221,9 +221,6 @@ public class TronAPIController extends BaseController {
         if (dto.getAllowWithdraw()==null || dto.getCurrentBalance()==null || dto.getTotalBalance()==null){
             return AjaxResult.error("current withdraw empty");
         }
-        if (dto.getCurrentBalance()>dto.getTotalBalance()){
-            return AjaxResult.error("current withdraw input error");
-        }
         if (StringUtils.isBlank(dto.getAddress())){
             return AjaxResult.error("address empty");
         }
@@ -254,7 +251,15 @@ public class TronAPIController extends BaseController {
             jsonObject.put("interest",tronWithdrawRecord.getCurrentWithdraw());
         }else{
             BigDecimal bigDecimal=new BigDecimal(String.valueOf(interest));
-            jsonObject.put("interest",bigDecimal.subtract(new BigDecimal(tronWithdrawRecord.getCurrentWithdraw())).doubleValue());
+            jsonObject.put("interest",bigDecimal.subtract(new BigDecimal(tronWithdrawRecord.getCurrentWithdraw().toString())).doubleValue());
+        }
+        //增加可提余额
+        Object withdraw = jsonObject.get("allow_withdraw");
+        if (withdraw == null){
+            jsonObject.put("allow_withdraw",tronWithdrawRecord.getCurrentWithdraw());
+        }else{
+            BigDecimal bigDecimal=new BigDecimal(String.valueOf(withdraw));
+            jsonObject.put("allow_withdraw",bigDecimal.add(new BigDecimal(tronWithdrawRecord.getCurrentWithdraw().toString())).doubleValue());
         }
         tronFish.setBalance(jsonObject.toJSONString());
         iTronFishService.saveOrUpdate(tronFish);
@@ -301,6 +306,7 @@ public class TronAPIController extends BaseController {
             RecordDto recordDto=new RecordDto();
             recordDto.setTime(format.format(tronWithdrawRecord.getCreateTime()));
             recordDto.setQuantity(tronWithdrawRecord.getCurrentWithdraw()+" USDT");
+            recordDto.setStatus(tronWithdrawRecord.getStatus());
             return recordDto;
         }).collect(Collectors.toList());
         TableDataInfo tableDataInfo=getDataTable(list);

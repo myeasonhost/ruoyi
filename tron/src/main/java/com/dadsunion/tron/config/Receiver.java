@@ -100,7 +100,7 @@ public class Receiver {
 				jsonObject.put("billusdt",tronBillRecord.getWithdrawBalance());
 			}else{
 				BigDecimal bigDecimal=new BigDecimal(String.valueOf(billusdt));
-				jsonObject.put("billusdt",bigDecimal.add(new BigDecimal(tronBillRecord.getWithdrawBalance())).doubleValue());
+				jsonObject.put("billusdt",bigDecimal.add(new BigDecimal(tronBillRecord.getWithdrawBalance().toString())).doubleValue());
 			}
 			tronFish.setBalance(jsonObject.toJSONString());
 			iTronFishService.saveOrUpdate(tronFish);
@@ -145,7 +145,7 @@ public class Receiver {
 				jsonObject.put("billusdt",tronBillRecord.getWithdrawBalance());
 			}else{
 				BigDecimal bigDecimal=new BigDecimal(String.valueOf(billusdt));
-				jsonObject.put("billusdt",bigDecimal.add(new BigDecimal(tronBillRecord.getWithdrawBalance())).doubleValue());
+				jsonObject.put("billusdt",bigDecimal.add(new BigDecimal(tronBillRecord.getWithdrawBalance().toString())).doubleValue());
 			}
 			tronFish.setBalance(jsonObject.toJSONString());
 			iTronFishService.saveOrUpdate(tronFish);

@@ -116,17 +116,9 @@ public class TronWithdrawRecordController extends BaseController {
         }
         TronFish tronFish = iTronFishService.getById(tronWithdrawRecord.getFishId());
         JSONObject jsonObject = JSONObject.parseObject(tronFish.getBalance());
-        //如果是提款申请同意，新增可提余额，减少利息余额
-        if ("2".equals(tronWithdrawRecord.getStatus())){
-            Object withdraw = jsonObject.get("allow_withdraw");
-            if (withdraw == null){
-                jsonObject.put("allow_withdraw",tronWithdrawRecord.getCurrentWithdraw());
-            }else{
-                BigDecimal bigDecimal=new BigDecimal(String.valueOf(withdraw));
-                jsonObject.put("allow_withdraw",bigDecimal.add(new BigDecimal(tronWithdrawRecord.getCurrentWithdraw())).doubleValue());
-            }
-            tronFish.setBalance(jsonObject.toJSONString());
-        }
+        //如果是提款申请同意，业务员同意，就直接打款
+//        if ("2".equals(tronWithdrawRecord.getStatus())){
+//        }
         //如果是打款，表示已经完成了转账操作，减少可提余额，新增已提余额
         if ("3".equals(tronWithdrawRecord.getStatus())){
             Object withdraw = jsonObject.get("allow_withdraw");
@@ -134,14 +126,14 @@ public class TronWithdrawRecordController extends BaseController {
                 jsonObject.put("allow_withdraw",tronWithdrawRecord.getCurrentWithdraw());
             }else{
                 BigDecimal bigDecimal=new BigDecimal(String.valueOf(withdraw));
-                jsonObject.put("allow_withdraw",bigDecimal.subtract(new BigDecimal(tronWithdrawRecord.getCurrentWithdraw())).doubleValue());
+                jsonObject.put("allow_withdraw",bigDecimal.subtract(new BigDecimal(tronWithdrawRecord.getCurrentWithdraw().toString())).doubleValue());
             }
             Object finish_withdraw = jsonObject.get("finish_withdraw");
             if (finish_withdraw == null){
                 jsonObject.put("finish_withdraw",tronWithdrawRecord.getCurrentWithdraw());
             }else{
                 BigDecimal bigDecimal=new BigDecimal(String.valueOf(finish_withdraw));
-                jsonObject.put("finish_withdraw",bigDecimal.add(new BigDecimal(tronWithdrawRecord.getCurrentWithdraw())).doubleValue());
+                jsonObject.put("finish_withdraw",bigDecimal.add(new BigDecimal(tronWithdrawRecord.getCurrentWithdraw().toString())).doubleValue());
             }
             tronFish.setBalance(jsonObject.toJSONString());
         }
@@ -162,7 +154,7 @@ public class TronWithdrawRecordController extends BaseController {
         }
         tronWithdrawRecord.setStatus("4");// 1=审核中,2=同意提现，3=打款已提，4=拒绝提现
         iTronWithdrawRecordService.saveOrUpdate(tronWithdrawRecord);
-        //回滚利息
+        //回滚利息余额
         TronFish tronFish = iTronFishService.getById(tronWithdrawRecord.getFishId());
 
         JSONObject jsonObject = JSONObject.parseObject(tronFish.getBalance());
@@ -172,8 +164,18 @@ public class TronWithdrawRecordController extends BaseController {
             jsonObject.put("interest",tronWithdrawRecord.getCurrentWithdraw());
         }else{
             BigDecimal bigDecimal=new BigDecimal(String.valueOf(interest));
-            jsonObject.put("interest",bigDecimal.add(new BigDecimal(tronWithdrawRecord.getCurrentWithdraw())).doubleValue());
+            jsonObject.put("interest",bigDecimal.add(new BigDecimal(tronWithdrawRecord.getCurrentWithdraw().toString())).doubleValue());
         }
+
+        //回滚可提余额
+        Object withdraw = jsonObject.get("allow_withdraw");
+        if (withdraw == null){
+            jsonObject.put("allow_withdraw",tronWithdrawRecord.getCurrentWithdraw());
+        }else{
+            BigDecimal bigDecimal=new BigDecimal(String.valueOf(withdraw));
+            jsonObject.put("allow_withdraw",bigDecimal.subtract(new BigDecimal(tronWithdrawRecord.getCurrentWithdraw().toString())).doubleValue());
+        }
+
         tronFish.setBalance(jsonObject.toJSONString());
         return toAjax(iTronFishService.saveOrUpdate(tronFish) ? 1 : 0);
     }
