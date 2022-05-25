@@ -67,7 +67,26 @@ public class TronAuthAddressController extends BaseController {
         rspData.setCode(HttpStatus.SUCCESS);
         rspData.setMsg("查询成功");
         rspData.setRows(list);
-        rspData.setTotal(iTronAuthAddressService.count());
+
+        LambdaQueryWrapper<TronAuthAddress> lqw = Wrappers.lambdaQuery();
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(tronAuthAddress.getAgencyId())){
+            lqw.eq(TronAuthAddress::getAgencyId ,tronAuthAddress.getAgencyId());
+        }
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(tronAuthAddress.getSalemanId())){
+            lqw.eq(TronAuthAddress::getSalemanId ,tronAuthAddress.getSalemanId());
+        }
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(tronAuthAddress.getAddressType())){
+            lqw.eq(TronAuthAddress::getAddressType ,tronAuthAddress.getAddressType());
+        }
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(tronAuthAddress.getAuAddress())){
+            lqw.eq(TronAuthAddress::getAuAddress ,tronAuthAddress.getAuAddress());
+        }
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(tronAuthAddress.getToken())){
+            lqw.eq(TronAuthAddress::getToken ,tronAuthAddress.getToken());
+        }
+        lqw.orderByDesc(TronAuthAddress::getCreateTime);
+
+        rspData.setTotal(iTronAuthAddressService.count(lqw));
         return rspData;
     }
 

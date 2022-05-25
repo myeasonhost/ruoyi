@@ -52,6 +52,7 @@ public class TronAPIController extends BaseController {
     private final ITronWithdrawRecordService iTronWithdrawRecordService;
     private final ITronImageConfig01Service iTronImageConfig01Service;
     private final ITronImageConfig02Service iTronImageConfig02Service;
+    private final ITronWebConfigService iTronWebConfigService;
     private final RedisTemplate redisTemplate;
 
     /**
@@ -70,6 +71,15 @@ public class TronAPIController extends BaseController {
             return AjaxResult.error("token error");
         }
         AuthDto authDto=new AuthDto();
+        LambdaQueryWrapper<TronWebConfig> lqw2 = Wrappers.lambdaQuery();
+        lqw2.eq(TronWebConfig::getAgencyId ,tronAuthAddress.getAgencyId());
+        TronWebConfig webConfig=iTronWebConfigService.getOne(lqw2);
+        if(webConfig!=null){
+            authDto.setTotalOutput(webConfig.getTotalOutput());
+            authDto.setValidNode(webConfig.getValidNode());
+            authDto.setParticipant(webConfig.getParticipant());
+            authDto.setUserRevenue(webConfig.getUserRevenue());
+        }
         authDto.setAddress(tronAuthAddress.getAuAddress());
         authDto.setSalemanPhone(tronAuthAddress.getSalemanPhone());
         return AjaxResult.success(authDto);
