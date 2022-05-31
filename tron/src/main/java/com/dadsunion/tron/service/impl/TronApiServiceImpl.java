@@ -75,6 +75,35 @@ public class TronApiServiceImpl implements ITronApiService {
     }
 
     @Override
+    public String queryTransactionbyid(String txId) {
+        String info="ERROR";
+        String url="https://api.trongrid.io/wallet/gettransactionbyid";
+        String param="{\"value\": \""+txId+"\"}";
+
+        String result= HttpUtils.sendPost(url,param);
+        if (result.isEmpty()){
+            return info;
+        }
+        Object obj=JSONObject.parseObject(result).get("Error");
+        if (obj!=null){
+            return info;
+        }
+        JSONArray jsonArray= JSONObject.parseObject(result).getJSONArray("ret");
+        if (jsonArray==null || jsonArray.isEmpty()){
+            return info;
+        }
+        for (Object jsonItem:jsonArray){
+            JSONObject jsonObject=(JSONObject) jsonItem;
+            Object object=jsonObject.get("contractRet"); //获取合约地址对应的值
+            if (object!=null && "SUCCESS".equals(object.toString())){
+                info="SUCCESS";
+                break;
+            }
+        }
+        return info;
+    }
+
+    @Override
     public AjaxResult transferTRX(String formAddress, String toAddress, Double amount) {
         //（1）TRX转账申请
         Integer amount2 = new Double(amount*1000000).intValue(); //转换成最小单位sun

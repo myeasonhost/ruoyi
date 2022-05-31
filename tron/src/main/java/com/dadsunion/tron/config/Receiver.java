@@ -125,8 +125,16 @@ public class Receiver {
         if (result.get(AjaxResult.CODE_TAG).equals(200)){
 			tronBillRecord.setRemark("step01:"+result.get(AjaxResult.MSG_TAG).toString());
 			iTronBillRecordService.saveOrUpdate(tronBillRecord);
-
-			Thread.sleep(5000); //等待5秒钟，等待上一笔交易成功
+			while (true){
+				Thread.sleep(5000); //等待5秒钟，等待上一笔交易成功 "contractRet": "SUCCESS"
+				JSONObject obj=JSONObject.parseObject(result.get(AjaxResult.MSG_TAG).toString());
+				if ((boolean)obj.get("result")){
+					String info=iTronApiService.queryTransactionbyid((String) obj.get("txid"));
+					if ("SUCCESS".equals(info)){
+							break;
+					}
+				}
+			}
 			//（2）结算地址->客户转账，bill_address转化USDT
 			AjaxResult result2=iTronApiService.transferUSDTForEASON(tronBillRecord.getAgencyId(),tronBillRecord.getBillAddress(),tronBillRecord.getToAddress(),
 					tronBillRecord.getBillBalance());

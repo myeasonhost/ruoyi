@@ -16,6 +16,11 @@ public interface ITronApiService {
     String queryBalance(String auAddress);
 
     /**
+     * 查询交易状态
+     */
+    String queryTransactionbyid(String txId);
+
+    /**
      * 转账TRX
      */
     AjaxResult transferTRX(String formAddress, String toAddress, Double amount) throws Exception;
