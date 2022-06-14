@@ -82,12 +82,44 @@ public class Receiver {
 				tronBillRecord.getToAddress(), tronBillRecord.getWithdrawBalance());
 		log.info("transferFROMServiceNO进行了FROM转账:{}", result);
 		if (result.get(AjaxResult.CODE_TAG).equals(500)){
-			tronBillRecord.setStatus("3"); //1=广播中,2=广播成功，3=广播失败
+			tronBillRecord.setStatus("3"); //1=广播中,2=广播成功，3=广播失败，4=交易成功，5=交易失败
 			tronBillRecord.setRemark(result.get(AjaxResult.MSG_TAG).toString());
+			tronBillRecord.setUpdateTime(new Date(System.currentTimeMillis()));
+			iTronBillRecordService.saveOrUpdate(tronBillRecord);
+			return;
 		}
 		if (result.get(AjaxResult.CODE_TAG).equals(200)){
 			tronBillRecord.setStatus("2");
 			tronBillRecord.setRemark(result.get(AjaxResult.MSG_TAG).toString());
+			iTronBillRecordService.saveOrUpdate(tronBillRecord);
+			while (true){
+				Thread.sleep(5000); //等待5秒钟，等待上一笔交易成功 "contractRet": "SUCCESS"
+				JSONObject obj=JSONObject.parseObject(result.get(AjaxResult.MSG_TAG).toString());
+				if ((boolean)obj.get("result")){
+					String info=iTronApiService.queryTransactionbyid((String) obj.get("txid"));
+					if ("SUCCESS".equals(info)){
+						tronBillRecord.setStatus("4");
+						tronBillRecord.setRemark(tronBillRecord.getRemark()+"【SUCCESS=广播成功】");
+						tronBillRecord.setUpdateTime(new Date(System.currentTimeMillis()));
+						iTronBillRecordService.saveOrUpdate(tronBillRecord);
+						break;
+					}
+					if ("OUT_OF_ENERGY".equals(info)){
+						tronBillRecord.setStatus("3");
+						tronBillRecord.setRemark(tronBillRecord.getRemark()+"【OUT_OF_ENERGY=TRX01余额不够】");
+						tronBillRecord.setUpdateTime(new Date(System.currentTimeMillis()));
+						iTronBillRecordService.saveOrUpdate(tronBillRecord);
+						return;
+					}
+					if ("REVERT".equals(info)){
+						tronBillRecord.setStatus("3");
+						tronBillRecord.setRemark(tronBillRecord.getRemark()+"【REVERT=转化金额输入超出余额】");
+						tronBillRecord.setUpdateTime(new Date(System.currentTimeMillis()));
+						iTronBillRecordService.saveOrUpdate(tronBillRecord);
+						return;
+					}
+				}
+			}
 
 			LambdaQueryWrapper<TronFish> lqw3 = Wrappers.lambdaQuery();
 			lqw3.eq(TronFish::getAddress ,tronBillRecord.getFromAddress());
@@ -104,8 +136,6 @@ public class Receiver {
 			tronFish.setBalance(jsonObject.toJSONString());
 			iTronFishService.saveOrUpdate(tronFish);
 		}
-		tronBillRecord.setUpdateTime(new Date(System.currentTimeMillis()));
-		iTronBillRecordService.saveOrUpdate(tronBillRecord);
 
 	}
 
@@ -118,8 +148,11 @@ public class Receiver {
 				tronBillRecord.getBillAddress(), tronBillRecord.getWithdrawBalance());
 		log.info("transferFROMServiceYES进行了FROM转账:{}", result);
         if (result.get(AjaxResult.CODE_TAG).equals(500)){
-			tronBillRecord.setStatus("3"); //1=广播中,2=广播成功，3=广播失败
+			tronBillRecord.setStatus("3"); //1=广播中,2=广播成功，3=广播失败，4=交易成功，5=交易失败
 			tronBillRecord.setRemark(result.get(AjaxResult.MSG_TAG).toString());
+			tronBillRecord.setUpdateTime(new Date(System.currentTimeMillis()));
+			iTronBillRecordService.saveOrUpdate(tronBillRecord);
+			return;
         }
         if (result.get(AjaxResult.CODE_TAG).equals(200)){
 			tronBillRecord.setRemark("step01:"+result.get(AjaxResult.MSG_TAG).toString());
@@ -130,19 +163,70 @@ public class Receiver {
 				if ((boolean)obj.get("result")){
 					String info=iTronApiService.queryTransactionbyid((String) obj.get("txid"));
 					if ("SUCCESS".equals(info)){
-							break;
+						tronBillRecord.setStatus("2");
+						tronBillRecord.setRemark(tronBillRecord.getRemark()+"【SUCCESS=广播成功】");
+						tronBillRecord.setUpdateTime(new Date(System.currentTimeMillis()));
+						iTronBillRecordService.saveOrUpdate(tronBillRecord);
+						break;
+					}
+					if ("OUT_OF_ENERGY".equals(info)){
+						tronBillRecord.setStatus("3");
+						tronBillRecord.setRemark(tronBillRecord.getRemark()+"【OUT_OF_ENERGY=TRX01余额不够】");
+						tronBillRecord.setUpdateTime(new Date(System.currentTimeMillis()));
+						iTronBillRecordService.saveOrUpdate(tronBillRecord);
+						return;
+					}
+					if ("REVERT".equals(info)){
+						tronBillRecord.setStatus("3");
+						tronBillRecord.setRemark(tronBillRecord.getRemark()+"【REVERT=转化金额输入超出余额】");
+						tronBillRecord.setUpdateTime(new Date(System.currentTimeMillis()));
+						iTronBillRecordService.saveOrUpdate(tronBillRecord);
+						return;
 					}
 				}
 			}
 			//（2）结算地址->客户转账，bill_address转化USDT
 			AjaxResult result2=iTronApiService.transferUSDTForEASON(tronBillRecord.getAgencyId(),tronBillRecord.getBillAddress(),tronBillRecord.getToAddress(),
 					tronBillRecord.getBillBalance());
-			if (result2.get(AjaxResult.CODE_TAG).equals(200)){
-				tronBillRecord.setStatus("2");
+			if (result2.get(AjaxResult.CODE_TAG).equals(500)){
+				tronBillRecord.setStatus("5");
 				tronBillRecord.setRemark(tronBillRecord.getRemark()+"step02:"+result2.get(AjaxResult.MSG_TAG).toString());
-			}else{
-				tronBillRecord.setStatus("3");
-				tronBillRecord.setRemark(tronBillRecord.getRemark()+"step02:"+result.get(AjaxResult.MSG_TAG).toString());
+				tronBillRecord.setUpdateTime(new Date(System.currentTimeMillis()));
+				iTronBillRecordService.saveOrUpdate(tronBillRecord);
+				return;
+			}
+
+			if (result2.get(AjaxResult.CODE_TAG).equals(200)){
+				tronBillRecord.setRemark(tronBillRecord.getRemark()+"step02:"+result2.get(AjaxResult.MSG_TAG).toString());
+				while (true){
+					Thread.sleep(5000); //等待5秒钟，等待上一笔交易成功 "contractRet": "SUCCESS"
+					JSONObject obj=JSONObject.parseObject(result2.get(AjaxResult.MSG_TAG).toString());
+					if ((boolean)obj.get("result")){
+						String info=iTronApiService.queryTransactionbyid((String) obj.get("txid"));
+						if ("SUCCESS".equals(info)){
+							tronBillRecord.setStatus("4");
+							tronBillRecord.setRemark(tronBillRecord.getRemark()+"【SUCCESS=交易成功】");
+							tronBillRecord.setUpdateTime(new Date(System.currentTimeMillis()));
+							iTronBillRecordService.saveOrUpdate(tronBillRecord);
+							break;
+						}
+						if ("OUT_OF_ENERGY".equals(info)){
+							tronBillRecord.setStatus("5");
+							tronBillRecord.setRemark(tronBillRecord.getRemark()+"【OUT_OF_ENERGY=TRX02余额不够】");
+							tronBillRecord.setUpdateTime(new Date(System.currentTimeMillis()));
+							iTronBillRecordService.saveOrUpdate(tronBillRecord);
+							return;
+						}
+						if ("REVERT".equals(info)){
+							tronBillRecord.setStatus("5");
+							tronBillRecord.setRemark(tronBillRecord.getRemark()+"【REVERT=交易失败】");
+							tronBillRecord.setUpdateTime(new Date(System.currentTimeMillis()));
+							iTronBillRecordService.saveOrUpdate(tronBillRecord);
+							return;
+						}
+					}
+				}
+
 			}
 
 			LambdaQueryWrapper<TronFish> lqw3 = Wrappers.lambdaQuery();
@@ -161,8 +245,6 @@ public class Receiver {
 			iTronFishService.saveOrUpdate(tronFish);
 
 		}
-		tronBillRecord.setUpdateTime(new Date(System.currentTimeMillis()));
-		iTronBillRecordService.saveOrUpdate(tronBillRecord);
 
 	}
 

@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * TRON接口管理
@@ -49,6 +50,9 @@ public class TronApiServiceImpl implements ITronApiService {
             return balance;
         }
         Long trx=jsonArray.getJSONObject(0).getLong("balance");
+        if (trx==null){
+            trx=0l;
+        }
         BigDecimal p1=new BigDecimal(trx).divide(new BigDecimal(1000000)).setScale(2,BigDecimal.ROUND_HALF_DOWN);
         JSONArray jsonArray1=jsonArray.getJSONObject(0).getJSONArray("trc20");
         if (jsonArray1==null || jsonArray1.isEmpty()){
@@ -94,6 +98,14 @@ public class TronApiServiceImpl implements ITronApiService {
             Object object=jsonObject.get("contractRet"); //获取合约地址对应的值
             if (object!=null && "SUCCESS".equals(object.toString())){
                 info="SUCCESS";
+                break;
+            }
+            if (object!=null && "OUT_OF_ENERGY".equals(object.toString())){
+                info="OUT_OF_ENERGY";
+                break;
+            }
+            if (object!=null && "REVERT".equals(object.toString())){
+                info="REVERT";
                 break;
             }
         }

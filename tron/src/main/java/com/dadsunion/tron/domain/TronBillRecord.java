@@ -72,8 +72,8 @@ private static final long serialVersionUID=1L;
     @Excel(name = "最终金额")
     private Double finishBalance;
 
-    /** 1=广播中,2=广播成功，3=广播失败 */
-    @Excel(name = "1=广播中,2=广播成功，3=广播失败")
+    /** 1=广播中,2=广播成功，3=广播失败，4=交易成功，5=交易失败 */
+    @Excel(name = "1=广播中,2=广播成功，3=广播失败，4=交易成功，5=交易失败")
     private String status;
 
     /** 备注 */
