@@ -72,12 +72,6 @@
             <artifactId>tron-generator</artifactId>
         </dependency>
 
-        <!--  demo模块  -->
-        <dependency>
-            <groupId>com.dadsunion</groupId>
-            <artifactId>tron-demo</artifactId>
-        </dependency>
-
         <!--  tron模块  -->
         <dependency>
             <groupId>com.dadsunion</groupId>

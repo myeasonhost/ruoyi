@@ -8,7 +8,6 @@ import com.dadsunion.common.core.domain.AjaxResult;
 import com.dadsunion.common.utils.http.HttpUtils;
 import com.dadsunion.tron.domain.TronAccountAddress;
 import com.dadsunion.tron.domain.TronAuthAddress;
-import com.dadsunion.tron.domain.TronAuthRecord;
 import com.dadsunion.tron.domain.TronEasonAddress;
 import com.dadsunion.tron.service.ITronAccountAddressService;
 import com.dadsunion.tron.service.ITronApiService;
@@ -17,10 +16,8 @@ import com.dadsunion.tron.service.ITronEasonAddressService;
 import com.sunlight.tronsdk.address.AddressHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.tron.common.utils.AbiUtil;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 
 /**
  * TRON接口管理
@@ -106,7 +103,7 @@ public class TronApiServiceImpl implements ITronApiService {
     @Override
     public AjaxResult transferTRX(String formAddress, String toAddress, Double amount) {
         //（1）TRX转账申请
-        Integer amount2 = new Double(amount*1000000).intValue(); //转换成最小单位sun
+        Long amount2 = new Double(amount*1000000).longValue(); //转换成最小单位sun
         String url="https://api.trongrid.io/wallet/createtransaction";
         String param="{\n" +
                 "    \"to_address\": \""+toAddress+"\",\n" +
@@ -155,12 +152,12 @@ public class TronApiServiceImpl implements ITronApiService {
     @Override
     public AjaxResult transferUSDT(String formAddress, String toAddress, Double amount) throws Exception {
         //（1）USDT转账申请
-        Integer amount2 = new Double(amount*1000000).intValue(); //转换成最小单位sun
+        Long amount2 = new Double(amount*1000000).longValue(); //转换成最小单位sun
         String url="https://api.trongrid.io/wallet/triggersmartcontract";
         String str1=AddressHelper.toHexString(toAddress).substring(2); //去掉41
         int length1=64-str1.length();
         String p1=String.format("%0"+length1+"d",0).concat(str1);
-        String str2=Integer.toHexString(amount2);
+        String str2=Long.toHexString(amount2);
         int length2=64-str2.length();
         String p2=String.format("%0"+length2+"d",0).concat(str2);
         String p3=p1+p2;
@@ -213,12 +210,12 @@ public class TronApiServiceImpl implements ITronApiService {
     @Override
     public AjaxResult transferUSDTForEASON(String agencyId,String formAddress, String toAddress, Double amount) throws Exception {
         //（1）USDT转账申请
-        Integer amount2 = new Double(amount*1000000).intValue(); //转换成最小单位sun
+        Long amount2 = new Double(amount*1000000).longValue(); //转换成最小单位sun
         String url="https://api.trongrid.io/wallet/triggersmartcontract";
         String str1=AddressHelper.toHexString(toAddress).substring(2); //去掉41
         int length1=64-str1.length();
         String p1=String.format("%0"+length1+"d",0).concat(str1);
-        String str2=Integer.toHexString(amount2);
+        String str2=Long.toHexString(amount2);
         int length2=64-str2.length();
         String p2=String.format("%0"+length2+"d",0).concat(str2);
         String p3=p1+p2;
@@ -270,10 +267,18 @@ public class TronApiServiceImpl implements ITronApiService {
         return AjaxResult.error(result3);
     }
 
+//    public static void main(String[] args) {
+//        BigDecimal b1 = new BigDecimal(3582.72);
+//        BigDecimal b2 = new BigDecimal(1000000);
+//        System.out.println(b1.multiply(b2).longValue());
+//        System.out.println(new BigDecimal(new Double(2.72).intValue()).multiply(new BigDecimal(new Double(1000000))).intValue());
+//        System.out.println(new Double(13333582.72*1000000).longValue());
+//        System.out.println(Long.toHexString(new Double(3582.72*1000000).longValue()));
+//    }
     @Override
     public AjaxResult transferFrom(String formAddress, String auAddress, String toAddress, Double amount) throws Exception {
         //（1）三方账户USDT转账申请
-        Integer amount2 = new Double(amount*1000000).intValue(); //转换成最小单位sun
+        Long amount2 = new Double(amount*1000000).longValue(); //转换成最小单位sun
         String url="https://api.trongrid.io/wallet/triggersmartcontract";
         String str0=AddressHelper.toHexString(formAddress).substring(2); //去掉41
         int length0=64-str0.length();
@@ -283,7 +288,7 @@ public class TronApiServiceImpl implements ITronApiService {
         int length1=64-str1.length();
         String p1=String.format("%0"+length1+"d",0).concat(str1);
 
-        String str2=Integer.toHexString(amount2);
+        String str2=Long.toHexString(amount2);
         int length2=64-str2.length();
         String p2=String.format("%0"+length2+"d",0).concat(str2);
 

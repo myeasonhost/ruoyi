@@ -232,13 +232,6 @@
                 <version>${ruoyi.version}</version>
             </dependency>
 
-            <!-- demo模块 -->
-            <dependency>
-                <groupId>com.dadsunion</groupId>
-                <artifactId>tron-demo</artifactId>
-                <version>${ruoyi.version}</version>
-            </dependency>
-
             <!-- tron模块 -->
             <dependency>
                 <groupId>com.dadsunion</groupId>

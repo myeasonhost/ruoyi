@@ -1,9 +1,7 @@
 package com.dadsunion.tron.service.impl;
 
-import com.dadsunion.tron.domain.TronAccountAddress;
 import com.dadsunion.tron.domain.TronAuthRecord;
 import com.dadsunion.tron.service.ITronAuthRecordService;
-import org.apache.ibatis.annotations.Select;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -15,7 +13,6 @@ import com.dadsunion.tron.domain.TronAuthAddress;
 import com.dadsunion.tron.service.ITronAuthAddressService;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**

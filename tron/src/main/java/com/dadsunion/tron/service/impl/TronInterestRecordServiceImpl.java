@@ -1,6 +1,5 @@
 package com.dadsunion.tron.service.impl;
 
-import com.dadsunion.tron.domain.TronFish;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -11,7 +10,6 @@ import com.dadsunion.tron.domain.TronInterestRecord;
 import com.dadsunion.tron.service.ITronInterestRecordService;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 利息Service业务层处理

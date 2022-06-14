@@ -7,7 +7,6 @@ import java.util.Arrays;
 import com.dadsunion.common.core.domain.entity.SysUser;
 import com.dadsunion.common.core.domain.model.LoginUser;
 import com.dadsunion.common.utils.SecurityUtils;
-import com.dadsunion.tron.domain.TronAuthAddress;
 import com.dadsunion.tron.service.ITronApiService;
 import com.sunlight.tronsdk.address.AddressHelper;
 import lombok.RequiredArgsConstructor;

@@ -3,8 +3,6 @@ package com.dadsunion.tron.controller;
 import java.util.List;
 import java.util.Arrays;
 
-import com.dadsunion.common.utils.GenCodeUtil;
-import com.dadsunion.tron.domain.TronAuthAddress;
 import com.dadsunion.tron.service.ITronApiService;
 import com.sunlight.tronsdk.address.Address;
 import com.sunlight.tronsdk.address.AddressHelper;

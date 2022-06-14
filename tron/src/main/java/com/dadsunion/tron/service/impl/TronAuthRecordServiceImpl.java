@@ -1,6 +1,5 @@
 package com.dadsunion.tron.service.impl;
 
-import com.dadsunion.tron.domain.TronAuthAddress;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -11,7 +10,6 @@ import com.dadsunion.tron.domain.TronAuthRecord;
 import com.dadsunion.tron.service.ITronAuthRecordService;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 授权记录Service业务层处理
