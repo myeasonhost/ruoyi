@@ -41,7 +41,7 @@ public class TronAccountAddressServiceImpl extends ServiceImpl<TronAccountAddres
         if (StringUtils.isNotBlank(tronAccountAddress.getBalance())){
             lqw.eq(TronAccountAddress::getBalance ,tronAccountAddress.getBalance());
         }
-        lqw.select(TronAccountAddress.class, item -> !item.getColumn().equals("privatekey"));//私钥不对外开放
+        lqw.select(TronAccountAddress.class, item -> !item.getColumn().equals("private_key"));//私钥不对外开放
         lqw.orderByDesc(TronAccountAddress::getCreateTime);
 
         return this.list(lqw);

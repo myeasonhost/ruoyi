@@ -1,5 +1,6 @@
 package com.dadsunion.tron.service.impl;
 
+import com.dadsunion.tron.domain.TronAccountAddress;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -41,6 +42,7 @@ public class TronEasonAddressServiceImpl extends ServiceImpl<TronEasonAddressMap
         if (StringUtils.isNotBlank(tronEasonAddress.getBalance())){
             lqw.eq(TronEasonAddress::getBalance ,tronEasonAddress.getBalance());
         }
+        lqw.select(TronEasonAddress.class, item -> !item.getColumn().equals("privateKey"));//私钥不对外开放
         lqw.orderByDesc(TronEasonAddress::getCreateTime);
 
         return this.list(lqw);

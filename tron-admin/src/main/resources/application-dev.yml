@@ -6,7 +6,7 @@ spring:
         druid:
             # 主库数据源
             master:
-                url: jdbc:mysql://192.168.8.230:3306/tron_wallet?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true
+                url: jdbc:mysql://192.168.1.230:3306/tron_wallet?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true
                 username: root
                 password: eason
             # 从库数据源
@@ -58,13 +58,13 @@ spring:
     # redis 配置
     redis:
         # 地址
-        host: 192.168.8.230
+        host: 192.168.1.230
         # 端口，默认为6379
         port: 6379
         # 数据库索引
         database: 0
         # 密码
-        password: eason
+        password:
         # 连接超时时间
         timeout: 10s
         lettuce:
@@ -78,6 +78,6 @@ spring:
                 # #连接池最大阻塞等待时间（使用负值表示没有限制）
                 max-wait: -1ms
 system:
-  white-ip: 
+  white-ip:
   notify:
     url: http://127.0.0.1:8080/api/notify
